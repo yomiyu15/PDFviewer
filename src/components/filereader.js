@@ -4,22 +4,6 @@ import { Document, Page, pdfjs } from 'react-pdf';
 // Set the worker path to the correct version
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
-const Header = () => {
-  const styles = {
-    header: {
-      width: '100%',
-      backgroundColor: '#00adef',
-      color: 'white',
-      padding: '10px',
-      textAlign: 'center',
-      fontSize: '25px',
-      fontWeight: 'bold',
-    },
-  };
-
-  return <header style={styles.header}> PDF Viewer</header>;
-};
-
 const FileReader = ({ filePath }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -59,11 +43,6 @@ const FileReader = ({ filePath }) => {
       borderRadius: '10px',
       boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
       transition: 'all 0.3s ease',
-      width: '100%',
-      maxWidth: '800px', // Optional max width
-      margin: '0 auto', // Centering
-      height: isFullScreen ? '100vh' : 'auto', // Full height in fullscreen
-      overflow: 'auto', // Allow scrolling if needed
     },
     title: {
       fontSize: '24px',
@@ -78,8 +57,6 @@ const FileReader = ({ filePath }) => {
     controls: {
       display: 'flex',
       gap: '10px',
-      flexWrap: 'wrap', // Allow wrapping for smaller screens
-      justifyContent: 'center', // Center the buttons
     },
     navButton: {
       padding: '10px 15px',
@@ -90,8 +67,6 @@ const FileReader = ({ filePath }) => {
       color: 'white',
       cursor: 'pointer',
       transition: 'background-color 0.3s',
-      flex: '1 1 auto', // Allow buttons to grow/shrink
-      maxWidth: '120px', // Limit max width of buttons
     },
     fullscreenButton: {
       padding: '10px 15px',
@@ -112,46 +87,32 @@ const FileReader = ({ filePath }) => {
       zIndex: '9999',
       background: 'white',
     },
-    pdfPage: {
-      width: '100%', // Make PDF page responsive
-      height: 'auto', // Maintain aspect ratio
-    },
   };
 
   return (
-    <div>
-      <Header />
-      <div style={{ ...styles.viewer, ...(isFullScreen ? styles.fullScreen : {}) }}>
-        {error && <p style={styles.errorMessage}>{error}</p>}
-        <Document
-          file={filePath}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onLoadError}
-        >
-          <Page pageNumber={pageNumber} style={styles.pdfPage} />
-        </Document>
-        <p style={styles.pageInfo}>
-          Page {pageNumber} of {numPages}
-        </p>
-        <div style={styles.controls}>
-          <button
-            style={styles.navButton}
-            onClick={() => setPageNumber(pageNumber - 1)}
-            disabled={pageNumber <= 1}
-          >
-            Previous
-          </button>
-          <button
-            style={styles.navButton}
-            onClick={() => setPageNumber(pageNumber + 1)}
-            disabled={pageNumber >= numPages}
-          >
-            Next
-          </button>
-          <button style={styles.fullscreenButton} onClick={toggleFullScreen}>
-            {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </button>
-        </div>
+    <div style={{ ...styles.viewer, ...(isFullScreen ? styles.fullScreen : {}) }}>
+      <h1 style={styles.title}>PDF Viewer</h1>
+      {error && <p style={styles.errorMessage}>{error}</p>}
+      <Document
+        file={filePath}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onLoadError}
+      >
+        <Page pageNumber={pageNumber} />
+      </Document>
+      <p style={styles.pageInfo}>
+        Page {pageNumber} of {numPages}
+      </p>
+      <div style={styles.controls}>
+        <button style={styles.navButton} onClick={() => setPageNumber(pageNumber - 1)} disabled={pageNumber <= 1}>
+          Previous
+        </button>
+        <button style={styles.navButton} onClick={() => setPageNumber(pageNumber + 1)} disabled={pageNumber >= numPages}>
+          Next
+        </button>
+        <button style={styles.fullscreenButton} onClick={toggleFullScreen}>
+          {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </button>
       </div>
     </div>
   );

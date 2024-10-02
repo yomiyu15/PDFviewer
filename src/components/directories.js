@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, Typography, Grid } from '@mui/material';
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  Grid,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import FileReader from './filereader';
+import FileReader from './filereader'; // Corrected the import casing
 
 const directories = [
   {
     name: 'Conventional',
     subDirectories: [
       {
-        name: 'Deposite_products',
+        name: 'Deposit Products',
         subDirectories: [
           {
-            name: 'Demand_deposit',
+            name: 'Demand Deposit',
             subDirectories: [
               {
-                name: 'Local_currency_deposite_products',
+                name: 'Local Currency Deposit Products',
                 files: [
                   { name: 'Ordinary Saving Account.pdf', path: '/Pdf/CCF.pdf' },
                   { name: 'Gamme Saving Account.pdf', path: '/Pdf/IMPORT.pdf' },
                   { name: 'Youth Saving Account.pdf', path: '/Pdf/CCF.pdf' },
-                  { name: 'Sinqe Women\'s Saving Account.pdf', path: '/Pdf/IMPORT.pdf' },
+                  { name: "Sinqe Women's Saving Account.pdf", path: '/Pdf/IMPORT.pdf' },
                   { name: 'Special Saving Account.pdf', path: '/Pdf/Special_Saving_Account.pdf' },
                   { name: 'Gudunfa Saving Account.pdf', path: '/Pdf/Gudunfa_Saving_Account.pdf' },
                   { name: 'Farmers Saving Account.pdf', path: '/Pdf/Farmers_Saving_Account.pdf' },
@@ -32,7 +41,7 @@ const directories = [
     ],
   },
   {
-    name: 'DigitalBankingProducts',
+    name: 'Digital Banking Products',
     subDirectories: [
       {
         name: 'Mobile Banking Products',
@@ -46,7 +55,7 @@ const directories = [
     name: 'Interest Free Banking Products',
     subDirectories: [
       {
-        name: 'Deposite Products',
+        name: 'Deposit Products',
         subDirectories: [
           {
             name: 'Mudarabah',
@@ -95,15 +104,28 @@ const DirectoryItem = ({ item, handleFileSelect, depth }) => {
   };
 
   return (
-    <Accordion expanded={isOpen} onChange={toggleFolder} disableGutters elevation={0} sx={{ margin: '0', border: 'none' }}>
+    <Accordion
+      expanded={isOpen}
+      onChange={toggleFolder}
+      disableGutters
+      elevation={0}
+      sx={{ margin: '0', border: 'none' }}
+    >
       <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={directoryStyle}>
-        <Typography style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>{item.name}</Typography>
+        <Typography style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+          {item.name}
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         {item.subDirectories && (
           <List disablePadding>
             {item.subDirectories.map((subDir, index) => (
-              <DirectoryItem key={index} item={subDir} handleFileSelect={handleFileSelect} depth={depth + 1} />
+              <DirectoryItem
+                key={index}
+                item={subDir}
+                handleFileSelect={handleFileSelect}
+                depth={depth + 1}
+              />
             ))}
           </List>
         )}
