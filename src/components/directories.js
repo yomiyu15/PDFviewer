@@ -1,182 +1,100 @@
 import React, { useState } from 'react';
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-  Grid,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import FileReader from './filereader'; // Corrected the import casing
-
-const directories = [
-  {
-    name: 'Conventional',
-    subDirectories: [
-      {
-        name: 'Deposit Products',
-        subDirectories: [
-          {
-            name: 'Demand Deposit',
-            subDirectories: [
-              {
-                name: 'Local Currency Deposit Products',
-                files: [
-                  { name: 'Ordinary Saving Account.pdf', path: '/Pdf/CCF.pdf' },
-                  { name: 'Gamme Saving Account.pdf', path: '/Pdf/IMPORT.pdf' },
-                  { name: 'Youth Saving Account.pdf', path: '/Pdf/CCF.pdf' },
-                  { name: "Sinqe Women's Saving Account.pdf", path: '/Pdf/IMPORT.pdf' },
-                  { name: 'Special Saving Account.pdf', path: '/Pdf/Special_Saving_Account.pdf' },
-                  { name: 'Gudunfa Saving Account.pdf', path: '/Pdf/Gudunfa_Saving_Account.pdf' },
-                  { name: 'Farmers Saving Account.pdf', path: '/Pdf/Farmers_Saving_Account.pdf' },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Digital Banking Products',
-    subDirectories: [
-      {
-        name: 'Mobile Banking Products',
-        files: [
-          { name: 'Card Banking Products.pdf', path: '/Pdf/Card_Banking_Products.pdf' },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Interest Free Banking Products',
-    subDirectories: [
-      {
-        name: 'Deposit Products',
-        subDirectories: [
-          {
-            name: 'Mudarabah',
-            files: [
-              { name: 'Mudarabah Savings Account.pdf', path: '/Pdf/Mudarabah_Savings_Account.pdf' },
-              { name: 'Mudarabah Investment Account.pdf', path: '/Pdf/Mudarabah_Investment_Account.pdf' },
-            ],
-          },
-        ],
-      },
-      {
-        name: 'Finance Products',
-        subDirectories: [
-          {
-            name: 'Murabaha',
-            files: [
-              { name: 'Murabaha Home Finance.pdf', path: '/Pdf/Murabaha_Home_Finance.pdf' },
-              { name: 'Murabaha Vehicle Finance.pdf', path: '/Pdf/Murabaha_Vehicle_Finance.pdf' },
-            ],
-          },
-          {
-            name: 'Ijara',
-            files: [
-              { name: 'Ijara Equipment Finance.pdf', path: '/Pdf/Ijara_Equipment_Finance.pdf' },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-];
-
-const DirectoryItem = ({ item, handleFileSelect, depth }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleFolder = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const directoryStyle = {
-    paddingLeft: `${depth * 10}px`,
-    fontSize: '12px',
-    backgroundColor: depth === 0 ? '#f4f4f4' : 'inherit',
-    display: 'flex',
-    alignItems: 'center',
-  };
-
-  return (
-    <Accordion
-      expanded={isOpen}
-      onChange={toggleFolder}
-      disableGutters
-      elevation={0}
-      sx={{ margin: '0', border: 'none' }}
-    >
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={directoryStyle}>
-        <Typography style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>
-          {item.name}
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        {item.subDirectories && (
-          <List disablePadding>
-            {item.subDirectories.map((subDir, index) => (
-              <DirectoryItem
-                key={index}
-                item={subDir}
-                handleFileSelect={handleFileSelect}
-                depth={depth + 1}
-              />
-            ))}
-          </List>
-        )}
-        {item.files && (
-          <List disablePadding>
-            {item.files.map((file, idx) => (
-              <ListItem
-                button
-                key={idx}
-                onClick={() => handleFileSelect(file.path)}
-                sx={{
-                  paddingLeft: `${(depth + 1) * 10}px`,
-                  fontSize: '10px',
-                  color: '#00adef',
-                }}
-              >
-                <ListItemText primary={file.name} />
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </AccordionDetails>
-    </Accordion>
-  );
-};
+import { Box, Drawer, IconButton } from '@mui/material';
+import Sidebar from './sidebar'; // Sidebar component for folders and files
+import FileReader from './filereader'; // FileReader component to view PDFs
+import Introduction from './introdction'; // Placeholder component
+import MenuIcon from '@mui/icons-material/Menu'; // Hamburger icon for mobile screens
 
 const DirectoryNavigator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false); // State for controlling sidebar visibility
 
-  const handleFileSelect = (filePath) => {
-    setSelectedFile(filePath);
+  // Handle file selection from Sidebar
+  const handleFileSelect = (folder, subfolder, file) => {
+    if (!folder || !subfolder || !file) {
+      console.error("Invalid parameters:", { folder, subfolder, file });
+      return;
+    }
+    
+    const pdfUrl = `http://localhost:5000/pdf-viewer?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}&file=${encodeURIComponent(file)}`;
+    console.log('Loading PDF from path:', pdfUrl);
+    
+    setSelectedFile(pdfUrl); // Set the selected file URL
+  };
+
+  // Toggle drawer visibility for mobile devices
+  const toggleDrawer = () => {
+    setDrawerOpen((prev) => !prev);
   };
 
   return (
-    <Grid container style={{ height: '100vh', overflow: 'hidden' }}>
-      <Grid item xs={12} sm={4} md={3} style={{ padding: '10px', background: '#f4f4f4', overflowY: 'auto' }}>
-        <Typography variant="h6" gutterBottom style={{ fontSize: '16px', fontWeight: 'bold' }}>
-          Product Catalog
-        </Typography>
-        {directories.map((dir, index) => (
-          <DirectoryItem key={index} item={dir} handleFileSelect={handleFileSelect} depth={0} />
-        ))}
-      </Grid>
-      <Grid item xs={12} sm={8} md={9} style={{ padding: '10px' }}>
+    <Box display="flex" height="100vh" sx={{ overflow: 'hidden' }}>
+      <IconButton
+        edge="start"
+        onClick={toggleDrawer}
+        sx={{ 
+          display: { xs: 'block', md: 'none' },
+          margin: 1,
+          position: 'absolute',
+          zIndex: 1300,
+        }}
+      >
+        <MenuIcon />
+      </IconButton>
+
+      <Box
+        component="nav"
+        sx={{
+          width: { xs: '100%', md: '300px' },
+          flexShrink: 0,
+        }}
+      >
+        <Drawer
+          variant="temporary"
+          open={drawerOpen}
+          onClose={toggleDrawer}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { width: '250px' },
+          }}
+        >
+          <Sidebar handleFileSelect={handleFileSelect} />
+        </Drawer>
+
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            width: '300px',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            overflowY: 'auto',
+            backgroundColor: '#f9f9f9',
+            borderRight: '1px solid #ddd',
+          }}
+        >
+          <Sidebar handleFileSelect={handleFileSelect} />
+        </Box>
+      </Box>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          marginLeft: { xs: 0, md: drawerOpen ? '300px' : '0' }, // Adjust margin based on drawer state
+          padding: '10px',
+          overflowY: 'auto',
+          height: '100vh',
+        }}
+      >
         {selectedFile ? (
           <FileReader filePath={selectedFile} />
         ) : (
-          <Typography>Select a file to view</Typography>
+          <Introduction />
         )}
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
