@@ -263,22 +263,23 @@ app.get('/pdf/:parentFolder/:subFolder/:fileName', (req, res) => {
 app.get('/pdf-viewer', (req, res) => {
     const { folder, subfolder, file } = req.query;
 
-    // Construct path with or without subfolder depending on its existence
+    // Construct path without redundant segments
     const pdfPath = subfolder
-        ? path.join(__dirname, 'uploads', folder, subfolder, file)
-        : path.join(__dirname, 'uploads', folder, file);
+        ? path.join(__dirname, 'uploads', folder, subfolder, file) // Include subfolder if present
+        : path.join(__dirname, 'uploads', folder, file); // Only the main folder if no subfolder
 
     console.log("Constructed PDF Path: ", pdfPath); // Log constructed path for debugging
 
-    // Serve the file
-    res.sendFile(pdfPath, (err) => {
+    // Check if the file exists before trying to send it
+    fs.stat(pdfPath, (err) => {
         if (err) {
             console.error("Error while loading PDF:", err);
-            res.status(404).send('PDF not found');
+            return res.status(404).send('PDF not found');
         }
+        // Serve the file if it exists
+        res.sendFile(pdfPath);
     });
 });
-
 
 // Endpoint to edit (rename) a folder
 app.post('/edit-folder', (req, res) => {
@@ -330,30 +331,7 @@ app.delete('/delete-folder', (req, res) => {
 });
 
 // Endpoint to edit (rename) a subfolder
-app.post('/edit-subfolder', (req, res) => {
-    const { parentFolderName, currentSubfolderName, newSubfolderName } = req.body;
 
-    if (!parentFolderName || !currentSubfolderName || !newSubfolderName) {
-        return res.status(400).send('All parameters are required');
-    }
-
-    const parentFolderPath = path.join(__dirname, 'uploads', parentFolderName);
-    const currentSubfolderPath = path.join(parentFolderPath, currentSubfolderName);
-    const newSubfolderPath = path.join(parentFolderPath, newSubfolderName);
-
-    if (!fs.existsSync(parentFolderPath) || !fs.existsSync(currentSubfolderPath)) {
-        return res.status(404).send('Parent folder or current subfolder does not exist');
-    }
-
-    fs.rename(currentSubfolderPath, newSubfolderPath, (err) => {
-        if (err) {
-            console.error('Error renaming subfolder', err);
-            return res.status(500).send('Error renaming subfolder');
-        }
-        console.log(`Renamed subfolder from ${currentSubfolderPath} to ${newSubfolderPath}`);
-        res.send('Subfolder renamed successfully');
-    });
-});
 // Endpoint to list files in a specific folder and its subfolders
 app.get('/list-files', (req, res) => {
     const { folderName } = req.query;
@@ -433,6 +411,7 @@ app.delete('/delete-file', (req, res) => {
         res.send('File deleted successfully');
     });
 });
+// Endpoint to edit (rename) a subfolder
 
 
 // Start the server

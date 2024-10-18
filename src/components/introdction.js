@@ -5,80 +5,49 @@ const Introduction = () => {
   return (
     <Box
       sx={{
+        textAlign: 'left',
+        padding: '50px 20px 20px 16px',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
       
-        minHeight: '100vh',
-        padding:"3rem",
-        backgroundColor: '#fff', // Dark overlay for text readability
-    
-        alignItems: 'center',
-        justifyContent: 'center',
+        maxWidth: '1000px', // Limit width for better readability
+        margin: 'auto', // Center the box
       }}
     >
-      
-      
-        <Typography
-          variant="h4"
-          sx={{
-            color: '#00adef',
-            marginBottom: '1.5rem',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            letterSpacing: '0.05rem', // Adds a modern touch
-          }}
-        >
-         Introduction
-        </Typography>
+      <Typography variant="h3" sx={{ color: '#00adef', fontSize: '2rem', mb: 5,fontWeight:"bold" }}>
+        Introduction
+      </Typography>
 
-        <Typography
-          variant="h5"
-          sx={{
-            marginBottom: '1rem',
-            fontWeight: 'bold',
-            color: '#333',
-          }}
-        >
-          Background
-        </Typography>
-        <Typography sx={{ marginBottom: '1.5rem', fontSize: '1rem', color: '#555' }}>
-          Coopbank possesses a diverse range of products within its portfolio. These products are
-          dispersed among different banking organs, making it challenging for employees to find them
-          all in one place. This catalog streamlines sales efforts while also serving as an informative
-          resource for employees.
-        </Typography>
+      <Typography variant="h3" sx={{ fontSize: '1.5rem', my: 2, color: '#333',fontWeight:"bold"  }}>
+         Background
+      </Typography>
+      <Typography sx={{ lineHeight: 1.6, fontSize: '1.1rem', mb: 3, color: '#555' }}>
+        Coopbank possesses a diverse range of products within its portfolio. These products are 
+        dispersed among different banking organs, which makes it challenging for employees of the 
+        bank to find them in one place for clear understanding to serve clients effectively. 
+        Therefore, this product catalog is destined to streamline sales efforts while simultaneously 
+        serving as an informative resource for employees.
+      </Typography>
 
-        <Typography
-          variant="h5"
-          sx={{
-            marginBottom: '1rem',
-            fontWeight: 'bold',
-            color: '#333',
-          }}
-        >
-          Objective
-        </Typography>
-        <Typography sx={{ marginBottom: '1.5rem', fontSize: '1rem', color: '#555' }}>
-          The objective of this document is to create an organized product catalog that employees can
-          use as a reference for product and service information, enhancing their ability to serve clients
-          effectively.
-        </Typography>
+      <Typography variant="h3" sx={{ fontSize: '1.5rem', my: 2, color: '#333' ,fontWeight:"bold" }}>
+        Objective
+      </Typography>
+      <Typography sx={{ lineHeight: 1.6, fontSize: '1.1rem', mb: 3, color: '#555' }}>
+        The objective of this document is to develop an organized product catalog that the 
+        bank's employees can use as a reference when they need information about the products 
+        and services of the bank.
+      </Typography>
 
-        <Typography
-          variant="h5"
-          sx={{
-            marginBottom: '1rem',
-            fontWeight: 'bold',
-            color: '#333',
-          }}
-        >
-          Methodology
-        </Typography>
-        <Typography sx={{ fontSize: '1rem', color: '#555' }}>
-          Secondary data collection methods were employed in preparing this document. Most of the
-          information came from procedures related to customer account opening and credit operations.
-          The bank's website was also referred to for cross-verification purposes.
-        </Typography>
-      </Box>
-   
+      <Typography variant="h3" sx={{ fontSize: '1.5rem', my: 2, color: '#333' ,fontWeight:"bold" }}>
+        Methodology
+      </Typography>
+      <Typography sx={{ lineHeight: 1.6, fontSize: '1.1rem', mb: 3, color: '#555' }}>
+        Secondary data collection methods were used to prepare the document. The majority of 
+        the information for crafting this content were collected from the procedures related to 
+        customer account opening and credit operations. Furthermore, the bank's website was 
+        also utilized for gathering relevant data.
+      </Typography>
+    </Box>
   );
 };
 

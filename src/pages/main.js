@@ -1,141 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Box,
-  useMediaQuery,
+  Drawer,
   IconButton,
-  Typography,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import { styled, useTheme } from '@mui/material/styles';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FolderIcon from '@mui/icons-material/Folder'; // Folder icon
+import DescriptionIcon from '@mui/icons-material/Description'; // PDF icon
+import { Document, Page } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import Introduction from '../components/introdction'; // Import the Introduction component
 
-// Custom styles for the drawer
-const DrawerStyled = styled(Drawer)(({ theme }) => ({
-  width: 240,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    width: 240,
-    boxSizing: 'border-box',
-  },
-}));
-
-// Responsive PDF viewer container
-const PDFContainer = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
-  padding: theme.spacing(3),
-  backgroundColor: theme.palette.background.default,
-  borderRadius: '8px',
-  boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
-  height: 'calc(100vh - 120px)', // Adjust for navbar and footer height
-  overflow: 'auto', // Allow scrolling if content overflows
-}));
-
-const Main = () => {
+const App = () => {
   const [folderStructure, setFolderStructure] = useState([]);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [selectedPdf, setSelectedPdf] = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Fetch folder structure from the backend
+  // Fetch folder structure from API
   useEffect(() => {
-    axios.get('http://localhost:5000/folder-structure')
-      .then(response => setFolderStructure(response.data))
-      .catch(error => console.error('Error fetching folder structure:', error));
+    fetch('http://localhost:5000/folder-structure')
+      .then((res) => res.json())
+      .then((data) => setFolderStructure(data))
+      .catch((err) => console.error('Error fetching folder structure:', err));
   }, []);
 
-  // Load PDF function
-  const handlePDFLoad = (folder, subfolder, file) => {
-    const url = `http://localhost:5000/pdf-viewer?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}&file=${encodeURIComponent(file)}`;
-    setPdfUrl(url);
-    if (isMobile) setMobileOpen(false); // Close drawer on mobile
+  // Handle PDF file selection
+  const handleFileClick = (path) => {
+    const parts = path.split('\\');
+    const folderName = parts[1];
+    const subfolderName = parts.length > 3 ? parts[2] : '';
+    const fileName = parts[parts.length - 1];
+    const pdfUrl = `http://localhost:5000/pdf-viewer?folder=${folderName}&subfolder=${subfolderName}&file=${fileName}`;
+    setSelectedPdf(pdfUrl);
+    setDrawerOpen(false); // Close drawer after selecting PDF
   };
 
-  // Drawer toggle function
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  // Render folder structure recursively with indentation
+  const renderFolderStructure = (folders, depth = 0) => {
+    return folders.map((item) => {
+      const paddingLeft = depth * 20; // Increase padding based on depth
+      if (item.type === 'folder') {
+        return (
+          <Accordion key={item.name} sx={{ boxShadow: 'none', padding: 0, margin: 0 }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ padding: 0 }}>
+              <span style={{ paddingLeft: paddingLeft }}>
+                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} /> {/* Folder icon */}
+                {item.name}
+              </span>
+            </AccordionSummary>
+            <AccordionDetails sx={{ paddingLeft: 0 }}>
+              {renderFolderStructure(item.children, depth + 1)} {/* Increase depth for children */}
+            </AccordionDetails>
+          </Accordion>
+        );
+      } else if (item.type === 'file') {
+        return (
+          <ListItem
+            button
+            key={item.name}
+            onClick={() => handleFileClick(item.path)}
+            sx={{ paddingLeft: `${paddingLeft + 20}px`, paddingTop: '2px', paddingBottom: '2px' }} // Indent file items too
+          >
+            <DescriptionIcon sx={{ marginRight: 1 }} /> {/* PDF icon */}
+            <ListItemText primary={item.name} />
+          </ListItem>
+        );
+      }
+      return null;
+    });
   };
-
-  // Render folder structure
-  const renderFolderStructure = (folders, parentFolder = '') => (
-    <List>
-      {folders.map((item) => (
-        <React.Fragment key={item.name}>
-          {item.type === 'folder' ? (
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />} >
-                <Typography>{item.name}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {renderFolderStructure(item.children, `${parentFolder}/${item.name}`)}
-              </AccordionDetails>
-            </Accordion>
-          ) : (
-            <ListItem
-              button
-              onClick={() => {
-                const pathParts = parentFolder.split('/');
-                const folder = pathParts.length > 1 ? pathParts[1] : pathParts[0];
-                const subfolder = pathParts.length > 2 ? pathParts.slice(2).join('/') : '';
-                handlePDFLoad(folder, subfolder, item.name);
-              }}
-              sx={{ paddingLeft: 4 }}
-            >
-              <ListItemText primary={item.name} />
-            </ListItem>
-          )}
-        </React.Fragment>
-      ))}
-    </List>
-  );
 
   return (
-    <Box sx={{ display: 'flex', height: '100%' }}>
-      {/* Drawer for folder structure */}
-      <DrawerStyled
-        variant={isMobile ? 'temporary' : 'permanent'}
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile
+    <div style={{ display: 'flex', height: '100vh' }}>
+      {/* Drawer for mobile sidebar */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        sx={{
+          width: 240, // Set a width for the Drawer
+          '& .MuiDrawer-paper': {
+            width: 240,
+            zIndex: 1300, // Ensure Drawer appears above other elements
+          },
         }}
       >
-        <IconButton
-          onClick={handleDrawerToggle}
-          sx={{ margin: '8px' }}
-          edge="start"
-          aria-label="menu"
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ padding: 2 }}>
-          Folder Structure
-        </Typography>
-        {renderFolderStructure(folderStructure)}
-      </DrawerStyled>
+        <List>{renderFolderStructure(folderStructure)}</List>
+      </Drawer>
 
-      {/* Main content area for PDF viewer */}
-      <PDFContainer>
-        {pdfUrl ? (
-          <Viewer fileUrl={pdfUrl} />
+      {/* Persistent Sidebar for desktop */}
+      <List sx={{ width: 300, display: { xs: 'none', md: 'block' }, paddingTop: 2 }}>
+        {renderFolderStructure(folderStructure)}
+      </List>
+
+      {/* Main content area for displaying PDFs */}
+      <div style={{ flexGrow: 1, padding: 16, overflow: 'auto' }}>
+        {selectedPdf ? (
+          <Document file={selectedPdf}>
+            <Page pageNumber={1} scale={1.5} />
+          </Document>
         ) : (
-          <Typography variant="h5" align="center">
-            Select a PDF to view
-          </Typography>
+          <Introduction /> // Display the Introduction component here
         )}
-      </PDFContainer>
-    </Box>
+      </div>
+
+      {/* Hamburger Menu for mobile */}
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={() => setDrawerOpen(true)}
+        sx={{ display: { md: 'none' }, position: 'fixed', top: 10, left: 10, zIndex: 2000 }} // Ensure it's above other elements
+      >
+        <MenuIcon />
+      </IconButton>
+    </div>
   );
 };
 
-export default Main;
+export default App;
