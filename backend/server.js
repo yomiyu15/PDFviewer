@@ -374,7 +374,19 @@ app.get('/list-files', (req, res) => {
 // Endpoint to delete a specific file
 
 
+app.post('/edit-subfolder', (req, res) => {
+    const { currentSubfolderName, newSubfolderName } = req.body;
+    // Logic to find and rename the subfolder
+    // Update your data store (filesystem or database)
+    res.status(200).send('Subfolder renamed successfully');
+});
 
+app.delete('/delete-subfolder', (req, res) => {
+    const { subfolderName } = req.body;
+    // Logic to find and delete the subfolder
+    // Update your data store (filesystem or database)
+    res.status(200).send('Subfolder deleted successfully');
+});
 
 
 

@@ -51,7 +51,7 @@ const App = () => {
           <Accordion key={item.name} sx={{ boxShadow: 'none', padding: 0, margin: 0 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ padding: 0 }}>
               <span style={{ paddingLeft: paddingLeft }}>
-                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1 }} /> {/* Folder icon */}
+                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1,color : '#FFD54F' }} /> {/* Folder icon */}
                 {item.name}
               </span>
             </AccordionSummary>

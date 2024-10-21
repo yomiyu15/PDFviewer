@@ -160,20 +160,32 @@ const AdminPanel = () => {
         setCurrentEditingSubfolder(subfolderName);
     };
 
-    const saveEditSubfolder = async () => {
-        if (!editSubfolderName) {
-            alert('Please enter a new subfolder name.');
-            return;
-        }
-        await fetch('http://localhost:5000/edit-subfolder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parentFolderName: selectedParentFolder, currentSubfolderName: currentEditingSubfolder, newSubfolderName: editSubfolderName }),
-        });
-        setEditSubfolderName('');
-        setCurrentEditingSubfolder('');
-        fetchFolderStructure();
+   const saveEditSubfolder = async () => {
+    if (!editSubfolderName) {
+        alert('Please enter a new subfolder name.');
+        return;
+    }
+
+    const requestBody = {
+        currentSubfolderName: currentEditingSubfolder,
+        newSubfolderName: editSubfolderName,
     };
+
+    console.log('Request Body:', requestBody); // Log the request body
+
+    await fetch('http://localhost:5000/edit-subfolder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+    });
+
+    setEditSubfolderName('');
+    setCurrentEditingSubfolder('');
+    fetchFolderStructure();
+};
+
+    
+    
 
     const renderFiles = (files, level) => (
         files.map((file) => (
@@ -233,10 +245,10 @@ const AdminPanel = () => {
                 ) : (
                     <ListItemText primary={folder.name} style={{ fontSize: 'inherit' }} />
                 )}
-                <IconButton onClick={() => startEditingFolder(folder.name)} size="small">
+                <IconButton sx={{color:"#4caf50 "}} onClick={() => startEditingFolder(folder.name)} size="small">
                     <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton onClick={() => deleteFolder(folder.name)} size="small">
+                <IconButton sx={{color:"#f44336"}} onClick={() => deleteFolder(folder.name)} size="small">
                     <DeleteIcon fontSize="small" />
                 </IconButton>
             </ListItem>
@@ -258,7 +270,7 @@ const AdminPanel = () => {
             {error && <Typography color="error" style={{ fontSize: '12px', textAlign: 'center' }}>Error: {error.message}</Typography>}
             
             <Grid container spacing={1}>
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12} md={4}>
                     <Card style={{ padding: '8px' }}>
                         <CardContent>
                             <Typography variant="h6" style={{ fontSize: '16px', fontWeight: "bold" }}>Folder Structure</Typography>
@@ -267,9 +279,10 @@ const AdminPanel = () => {
                             </List>
                         </CardContent>
                     </Card>
+                    
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={8}>
                     {/* Upload File Section */}
                     <Card style={{ marginBottom: '10px', padding: '8px' }}>
                         <CardContent>
