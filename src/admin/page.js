@@ -270,8 +270,8 @@ const AdminPanel = () => {
     );
 
     return (
-        <Container maxWidth="lg" style={{ marginTop: '100px', fontSize: '12px', height: '200vh' }}>
-            <Typography variant="h4" gutterBottom style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>
+        <Container maxWidth="lg" style={{ marginTop: '50px', fontSize: '12px', height: '200vh' }}>
+            <Typography variant="h4" gutterBottom style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' ,marginBottom:"20px"}}>
                 Admin Panel
             </Typography>
             {loading && <Typography style={{ fontSize: '12px', textAlign: 'center' }}>Loading...</Typography>}

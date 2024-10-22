@@ -108,7 +108,7 @@ const App = () => {
           >
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ padding: 0 }}>
               <span style={{ paddingLeft: paddingLeft }}>
-                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1, color: '#FFD54F' }} />
+                {/* <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1, color: '#FFD54F' }} /> */}
                 {item.name}
               </span>
             </AccordionSummary>
@@ -132,7 +132,7 @@ const App = () => {
               alignItems: 'flex-start',
             }}
           >
-            <DescriptionIcon sx={{ marginRight: 1 }} />
+            {/* <DescriptionIcon sx={{ marginRight: 1 }} /> */}
             <ListItemText
               primary={item.name}
               sx={{
@@ -140,7 +140,8 @@ const App = () => {
                   whiteSpace: 'normal',
                   textAlign: 'left',
                   textIndent: '0',
-                  paddingLeft: '24px',
+                  paddingLeft: '2px',
+                  fontSize:"10"
                 },
               }}
             />
