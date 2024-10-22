@@ -10,6 +10,7 @@ import {
   ListItemText,
   TextField,
   Box,
+  Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -24,11 +25,14 @@ import Introduction from '../components/introdction';
 const App = () => {
   const [folderStructure, setFolderStructure] = useState([]);
   const [selectedPdf, setSelectedPdf] = useState('');
-  const [numPages, setNumPages] = useState(null); // Track the number of pages
+  const [numPages, setNumPages] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [pdfScale, setPdfScale] = useState(1.5);
+  const [selectedFolder, setSelectedFolder] = useState('');
+  const [selectedSubfolder, setSelectedSubfolder] = useState('');
+  const [selectedFile, setSelectedFile] = useState('');
 
   // Fetch folder structure from API
   useEffect(() => {
@@ -45,7 +49,11 @@ const App = () => {
     const subfolderName = parts.length > 3 ? parts[2] : '';
     const fileName = parts[parts.length - 1];
     const pdfUrl = `http://localhost:5000/pdf-viewer?folder=${folderName}&subfolder=${subfolderName}&file=${fileName}`;
+
     setSelectedPdf(pdfUrl);
+    setSelectedFolder(folderName); // Set selected folder
+    setSelectedSubfolder(subfolderName); // Set selected subfolder
+    setSelectedFile(fileName); // Set selected file
     setDrawerOpen(false); // Close drawer after selecting PDF
   };
 
@@ -69,9 +77,9 @@ const App = () => {
     const handleResize = () => {
       const isMobileView = window.innerWidth < 900;
       setIsMobile(isMobileView);
-      setPdfScale(isMobileView ? 1 : 1.5); // Adjust PDF scale based on view
+      setPdfScale(isMobileView ? 1 : 1.5);
       if (!isMobileView) {
-        setDrawerOpen(false); // Close drawer when switching to desktop
+        setDrawerOpen(false);
       }
     };
 
@@ -81,7 +89,7 @@ const App = () => {
 
   // Load all pages when the PDF document is loaded
   const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages); // Set total number of pages
+    setNumPages(numPages);
   };
 
   // Render folder structure
@@ -116,12 +124,12 @@ const App = () => {
             key={item.name}
             onClick={() => handleFileClick(item.path)}
             sx={{
-              paddingLeft: `${paddingLeft + 20}px`, // Adjust based on nesting level
+              paddingLeft: `${paddingLeft + 20}px`,
               paddingTop: '2px',
               paddingBottom: '2px',
               borderBottom: 'none',
               display: 'flex',
-              alignItems: 'flex-start', // Ensures icon and text align properly
+              alignItems: 'flex-start',
             }}
           >
             <DescriptionIcon sx={{ marginRight: 1 }} />
@@ -129,10 +137,10 @@ const App = () => {
               primary={item.name}
               sx={{
                 '& .MuiTypography-root': {
-                  whiteSpace: 'normal', // Allow text to wrap
-                  textAlign: 'left',    // Align text to the left
-                  textIndent: '0',      // No indent for the first line
-                  paddingLeft: '24px',  // Adjust this padding to align wrapped lines
+                  whiteSpace: 'normal',
+                  textAlign: 'left',
+                  textIndent: '0',
+                  paddingLeft: '24px',
                 },
               }}
             />
@@ -155,7 +163,7 @@ const App = () => {
           '& .MuiDrawer-paper': {
             width: 240,
             zIndex: 1300,
-            height: '100vh', // Set height for the Drawer
+            height: '100vh',
           },
         }}
       >
@@ -195,7 +203,7 @@ const App = () => {
           />
         </Box>
 
-        <Box sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 64px)' }}> {/* Ensure scrollable area */}
+        <Box sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 64px)' }}>
           <List>{renderFolderStructure(filterFolders(folderStructure))}</List>
         </Box>
       </Drawer>
@@ -223,11 +231,17 @@ const App = () => {
       {/* Main content area for displaying PDFs */}
       <div style={{ flexGrow: 1, padding: 16, overflow: 'auto' }}>
         {selectedPdf ? (
-          <Document file={selectedPdf} onLoadSuccess={onDocumentLoadSuccess}>
-            {Array.from(new Array(numPages), (el, index) => (
-              <Page key={`page_${index + 1}`} pageNumber={index + 1} scale={pdfScale} />
-            ))}
-          </Document>
+          <>
+            {/* Display selected folder, subfolder, and file name */}
+            <Typography variant="p" sx={{ marginBottom: 1,color:"#333" }}>
+              {`${selectedFolder}/${selectedSubfolder}/${selectedFile}`}
+            </Typography>
+            <Document file={selectedPdf} onLoadSuccess={onDocumentLoadSuccess}>
+              {Array.from(new Array(numPages), (el, index) => (
+                <Page key={`page_${index + 1}`} pageNumber={index + 1} scale={pdfScale} />
+              ))}
+            </Document>
+          </>
         ) : (
           <Introduction />
         )}
@@ -240,7 +254,12 @@ const App = () => {
           aria-label="open drawer"
           edge="start"
           onClick={() => setDrawerOpen(true)}
-          sx={{ position: 'fixed', top: 10, left: 10, zIndex: 2000 }}
+         
+          sx={{
+            marginLeft: 'auto',
+            marginTop: 2,
+            display: { sm: 'none' },
+          }}
         >
           <MenuIcon />
         </IconButton>

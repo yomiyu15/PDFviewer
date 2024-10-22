@@ -160,24 +160,39 @@ const AdminPanel = () => {
         setCurrentEditingSubfolder(subfolderName);
     };
 
-   const saveEditSubfolder = async () => {
-    if (!editSubfolderName) {
-        alert('Please enter a new subfolder name.');
-        return;
-    }
-    await fetch('http://localhost:5000/edit-subfolder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            currentSubfolderName: currentEditingSubfolder,
-            newSubfolderName: editSubfolderName,
-        }),
-    });
-    setEditSubfolderName('');
-    setCurrentEditingSubfolder('');
-    fetchFolderStructure();
-};
-
+    const saveEditSubfolder = async () => {
+        if (!editSubfolderName) {
+            alert('Please enter a new subfolder name.');
+            return;
+        }
+    
+        console.log("Parent Folder:", selectedParentFolder);
+        console.log("Current Subfolder:", currentEditingSubfolder);
+        console.log("New Subfolder Name:", editSubfolderName);
+    
+        try {
+            const response = await fetch('http://localhost:5000/edit-subfolder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    parentFolderName: selectedParentFolder,
+                    currentSubfolderName: currentEditingSubfolder,
+                    newSubfolderName: editSubfolderName
+                }),
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+            }
+    
+            setEditSubfolderName('');
+            setCurrentEditingSubfolder('');
+            fetchFolderStructure();
+        } catch (error) {
+            alert(error.message);
+        }
+    };
     
 
     const renderFiles = (files, level) => (
