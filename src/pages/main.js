@@ -77,7 +77,7 @@ const App = () => {
     const handleResize = () => {
       const isMobileView = window.innerWidth < 900;
       setIsMobile(isMobileView);
-      setPdfScale(isMobileView ? 1 : 1.5);
+      setPdfScale(isMobileView ? 0.8 : 1.5);
       if (!isMobileView) {
         setDrawerOpen(false);
       }
@@ -233,7 +233,7 @@ const App = () => {
         {selectedPdf ? (
           <>
             {/* Display selected folder, subfolder, and file name */}
-            <Typography variant="p" sx={{ marginBottom: 1,color:"#333" }}>
+            <Typography variant="body" sx={{ marginBottom: 1,color:"#333" }}>
               {`${selectedFolder}/${selectedSubfolder}/${selectedFile}`}
             </Typography>
             <Document file={selectedPdf} onLoadSuccess={onDocumentLoadSuccess}>
@@ -248,22 +248,24 @@ const App = () => {
       </div>
 
       {/* Hamburger Menu for mobile */}
-      {isMobile && (
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={() => setDrawerOpen(true)}
-         
-          sx={{
-            marginLeft: 'auto',
-            marginTop: 2,
-            display: { sm: 'none' },
-          }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
+     {/* Hamburger Menu for mobile */}
+{isMobile && (
+  <IconButton
+    color="inherit"
+    aria-label="open drawer"
+    edge="start"
+    onClick={() => setDrawerOpen(true)}
+    sx={{
+      position: 'absolute', // Change to absolute positioning
+      top: 16, // Adjust vertical position
+      left: 16, // Adjust horizontal position
+      zIndex: 1301, // Ensure it's above the Drawer
+    }}
+  >
+    <MenuIcon />
+  </IconButton>
+)}
+
     </div>
   );
 };
