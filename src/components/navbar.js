@@ -6,7 +6,7 @@ import Logoimage from '../assets/images/bb.png'; // Adjust the path to your logo
 
 const Navbar = () => {
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: '#ffffff', boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', borderBottom: '1px solid #e0e0e0' }}>
+    <AppBar position="fixed" sx={{ backgroundColor: '#f5f5f5', boxShadow: '0 2px 10px rgba(0, 0, 0, 0)' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Logo Section */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
@@ -26,7 +26,7 @@ const Navbar = () => {
               color: '#ffffff',
               textTransform: 'none', // Make text lowercase
               '&:hover': {
-                backgroundColor: '#005f8d',
+                backgroundColor: '#00adef',
               },
               transition: 'background-color 0.3s', // Smooth transition for button
             }}

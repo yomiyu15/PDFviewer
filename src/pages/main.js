@@ -8,20 +8,27 @@ import {
   List,
   ListItem,
   ListItemText,
+  TextField,
+  Box,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import FolderIcon from '@mui/icons-material/Folder'; // Folder icon
-import DescriptionIcon from '@mui/icons-material/Description'; // PDF icon
+import FolderIcon from '@mui/icons-material/Folder';
+import DescriptionIcon from '@mui/icons-material/Description';
+import SearchIcon from '@mui/icons-material/Search';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import Introduction from '../components/introdction'; // Import the Introduction component
+import Introduction from '../components/introdction';
 
 const App = () => {
   const [folderStructure, setFolderStructure] = useState([]);
   const [selectedPdf, setSelectedPdf] = useState('');
+  const [numPages, setNumPages] = useState(null); // Track the number of pages
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [pdfScale, setPdfScale] = useState(1.5);
 
   // Fetch folder structure from API
   useEffect(() => {
@@ -42,21 +49,63 @@ const App = () => {
     setDrawerOpen(false); // Close drawer after selecting PDF
   };
 
-  // Render folder structure recursively with indentation
-  const renderFolderStructure = (folders, depth = 0) => {
-    return folders.map((item) => {
-      const paddingLeft = depth * 20; // Increase padding based on depth
+  // Filter folders based on search term
+  const filterFolders = (folders) => {
+    return folders.filter((item) => {
       if (item.type === 'folder') {
         return (
-          <Accordion key={item.name} sx={{ boxShadow: 'none', padding: 0, margin: 0 }}>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          filterFolders(item.children).length > 0
+        );
+      } else if (item.type === 'file') {
+        return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+      return false;
+    });
+  };
+
+  // Responsive design: Update mobile/desktop state on resize
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileView = window.innerWidth < 900;
+      setIsMobile(isMobileView);
+      setPdfScale(isMobileView ? 1 : 1.5); // Adjust PDF scale based on view
+      if (!isMobileView) {
+        setDrawerOpen(false); // Close drawer when switching to desktop
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Load all pages when the PDF document is loaded
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages); // Set total number of pages
+  };
+
+  // Render folder structure
+  const renderFolderStructure = (folders, depth = 0) => {
+    return folders.map((item) => {
+      const paddingLeft = depth * 20;
+      if (item.type === 'folder') {
+        return (
+          <Accordion
+            key={item.name}
+            sx={{
+              boxShadow: 'none',
+              padding: 0,
+              margin: 0,
+            }}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ padding: 0 }}>
               <span style={{ paddingLeft: paddingLeft }}>
-                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1,color : '#FFD54F' }} /> {/* Folder icon */}
+                <FolderIcon sx={{ verticalAlign: 'middle', marginRight: 1, color: '#FFD54F' }} />
                 {item.name}
               </span>
             </AccordionSummary>
             <AccordionDetails sx={{ paddingLeft: 0 }}>
-              {renderFolderStructure(item.children, depth + 1)} {/* Increase depth for children */}
+              {renderFolderStructure(item.children, depth + 1)}
             </AccordionDetails>
           </Accordion>
         );
@@ -66,10 +115,27 @@ const App = () => {
             button
             key={item.name}
             onClick={() => handleFileClick(item.path)}
-            sx={{ paddingLeft: `${paddingLeft + 20}px`, paddingTop: '2px', paddingBottom: '2px' }} // Indent file items too
+            sx={{
+              paddingLeft: `${paddingLeft + 20}px`, // Adjust based on nesting level
+              paddingTop: '2px',
+              paddingBottom: '2px',
+              borderBottom: 'none',
+              display: 'flex',
+              alignItems: 'flex-start', // Ensures icon and text align properly
+            }}
           >
-            <DescriptionIcon sx={{ marginRight: 1 }} /> {/* PDF icon */}
-            <ListItemText primary={item.name} />
+            <DescriptionIcon sx={{ marginRight: 1 }} />
+            <ListItemText
+              primary={item.name}
+              sx={{
+                '& .MuiTypography-root': {
+                  whiteSpace: 'normal', // Allow text to wrap
+                  textAlign: 'left',    // Align text to the left
+                  textIndent: '0',      // No indent for the first line
+                  paddingLeft: '24px',  // Adjust this padding to align wrapped lines
+                },
+              }}
+            />
           </ListItem>
         );
       }
@@ -85,42 +151,100 @@ const App = () => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         sx={{
-          width: 240, // Set a width for the Drawer
+          width: 240,
           '& .MuiDrawer-paper': {
             width: 240,
-            zIndex: 1300, // Ensure Drawer appears above other elements
+            zIndex: 1300,
+            height: '100vh', // Set height for the Drawer
           },
         }}
       >
-        <List>{renderFolderStructure(folderStructure)}</List>
+        <Box sx={{ padding: 2 }}>
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="Search..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <IconButton sx={{ color: '#00adef' }}>
+                  <SearchIcon />
+                </IconButton>
+              ),
+            }}
+            sx={{
+              marginTop: 5,
+              marginBottom: 2,
+              borderRadius: 3,
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#00adef',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#007bb5',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#005f87',
+                },
+              },
+              '& .MuiInputBase-input': {
+                padding: '10px 12px',
+              },
+            }}
+          />
+        </Box>
+
+        <Box sx={{ overflowY: 'auto', maxHeight: 'calc(100vh - 64px)' }}> {/* Ensure scrollable area */}
+          <List>{renderFolderStructure(filterFolders(folderStructure))}</List>
+        </Box>
       </Drawer>
 
       {/* Persistent Sidebar for desktop */}
-      <List sx={{ width: 300, display: { xs: 'none', md: 'block' }, paddingTop: 2 }}>
-        {renderFolderStructure(folderStructure)}
+      <List sx={{ width: 300, display: { xs: 'none', md: 'block' }, paddingTop: 5, overflowY: 'auto', height: '100vh' }}>
+        <TextField
+          sx={{
+            marginBottom: 2,
+            borderRadius: '30px',
+          }}
+          variant="outlined"
+          size="small"
+          placeholder="Search..."
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <SearchIcon sx={{ marginRight: 1, color: "#00adef" }} />
+            ),
+          }}
+        />
+        {renderFolderStructure(filterFolders(folderStructure))}
       </List>
 
       {/* Main content area for displaying PDFs */}
       <div style={{ flexGrow: 1, padding: 16, overflow: 'auto' }}>
         {selectedPdf ? (
-          <Document file={selectedPdf}>
-            <Page pageNumber={1} scale={1.5} />
+          <Document file={selectedPdf} onLoadSuccess={onDocumentLoadSuccess}>
+            {Array.from(new Array(numPages), (el, index) => (
+              <Page key={`page_${index + 1}`} pageNumber={index + 1} scale={pdfScale} />
+            ))}
           </Document>
         ) : (
-          <Introduction /> // Display the Introduction component here
+          <Introduction />
         )}
       </div>
 
       {/* Hamburger Menu for mobile */}
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={() => setDrawerOpen(true)}
-        sx={{ display: { md: 'none' }, position: 'fixed', top: 10, left: 10, zIndex: 2000 }} // Ensure it's above other elements
-      >
-        <MenuIcon />
-      </IconButton>
+      {isMobile && (
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={() => setDrawerOpen(true)}
+          sx={{ position: 'fixed', top: 10, left: 10, zIndex: 2000 }}
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
     </div>
   );
 };

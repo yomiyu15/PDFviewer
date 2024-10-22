@@ -6,7 +6,7 @@ const Introduction = () => {
     <Box
       sx={{
         textAlign: 'left',
-        padding: '20px 20px 20px 16px',
+        padding: '40px 20px 20px 16px',
         backgroundColor: '#fff',
         borderRadius: '8px',
       

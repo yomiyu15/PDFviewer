@@ -10,6 +10,7 @@ import { AuthProvider } from './context/Authcontext'; // Adjust the path if nece
 import ProtectedRoute from './context/ProtectedRoute'; // Adjust the path if necessary
 import Main from './pages/main';
 
+
 const App = () => {
     return (
         <AuthProvider>

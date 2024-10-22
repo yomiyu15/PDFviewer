@@ -165,26 +165,19 @@ const AdminPanel = () => {
         alert('Please enter a new subfolder name.');
         return;
     }
-
-    const requestBody = {
-        currentSubfolderName: currentEditingSubfolder,
-        newSubfolderName: editSubfolderName,
-    };
-
-    console.log('Request Body:', requestBody); // Log the request body
-
     await fetch('http://localhost:5000/edit-subfolder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+            currentSubfolderName: currentEditingSubfolder,
+            newSubfolderName: editSubfolderName,
+        }),
     });
-
     setEditSubfolderName('');
     setCurrentEditingSubfolder('');
     fetchFolderStructure();
 };
 
-    
     
 
     const renderFiles = (files, level) => (

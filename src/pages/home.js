@@ -1,7 +1,31 @@
-import React from 'react';
 import { Link } from 'react-router-dom'; // Using Link for navigation
 import img1 from '../assets/images/file.png'; // Adjust the path to your image
 import { Box, Button, Typography } from '@mui/material';
+import { keyframes } from '@emotion/react';
+
+// Define keyframes for animations
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const bounce = keyframes`
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+`;
 
 export default function Home() {
   return (
@@ -14,7 +38,7 @@ export default function Home() {
         justifyContent: 'center',
         alignItems: 'center',
         color: 'text.primary',
-        
+        animation: `${fadeIn} 0.8s ease-in-out`, // Fade-in animation for the whole box
       }}
     >
       {/* Background overlay */}
@@ -39,7 +63,7 @@ export default function Home() {
           paddingBottom: { xs: '2rem', sm: '0' },
           paddingX: { xs: '1rem', sm: '2rem' },
           maxWidth: '100%',
-          position: 'relative', // Allows zIndex to take effect
+          position: 'relative',
           zIndex: 10,
         }}
       >
@@ -54,47 +78,38 @@ export default function Home() {
               textAlign: { xs: 'left', sm: 'left' },
               order: { xs: 2, sm: 1 },
               zIndex: 10,
+              padding: { xs: '0 1rem', sm: '0' },
+              animation: `${fadeIn} 1s ease-in-out`,
             }}
           >
-            <Typography variant="h3" fontWeight="bold">
-              Product Catalog
+            <Typography variant="h3" fontWeight="bold" sx={{ color: '#333' }}>
+              Explore Our Product Catalog
             </Typography>
-            <Typography variant="body1" sx={{ maxWidth: '500px', marginBottom: '1.5rem' }}>
-              This feature-packed documentation template, built with React.js, offers a
-              sleek and responsive design, perfect for all your project documentation
-              needs.
+            <Typography variant="body1" sx={{ maxWidth: '500px', marginBottom: '1.5rem', color: '#555' }}>
+              Discover an array of innovative banking solutions crafted with care. Our dynamic documentation template, built with React.js, ensures a seamless and responsive experience tailored to meet your project needs.
             </Typography>
 
             {/* Buttons */}
             <Box>
-  <Link to="/directories">
-    <Button
-      variant="contained"
-      sx={{
-        backgroundColor: '#000', // Background color set to black
-        color: 'white',
-        textTransform: 'none', // Prevents text from being capitalized
-        ':hover': {
-          backgroundColor: '#0089c7', // Retaining hover color
-        },
-        marginRight: '1rem',
-        paddingX: '1.5rem',
-      }}
-    >
-      Get started {/* Text set to capital "G" and lowercase rest */}
-    </Button>
-  </Link>
-  
-  {/* Uncomment if you want to keep the Read more button */}
-  {/* 
-  <Link to="/blog">
-    <Button variant="outlined" sx={{ paddingX: '1.5rem', marginLeft: '1rem' }}>
-      Read more
-    </Button>
-  </Link> 
-  */}
-</Box>
-
+              <Link to="/directories">
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: '#000',
+                    color: 'white',
+                    textTransform: 'none',
+                    ':hover': {
+                      backgroundColor: '#0089c7',
+                    },
+                    marginRight: '1rem',
+                    paddingX: '1.5rem',
+                   
+                  }}
+                >
+                  Get Started
+                </Button>
+              </Link>
+            </Box>
 
             <Typography
               variant="subtitle1"
@@ -103,9 +118,10 @@ export default function Home() {
                 marginTop: '1rem',
                 display: 'flex',
                 alignItems: 'center',
+                fontWeight:'bold'
               }}
             >
-              Banking products and product catalog information
+              Your gateway to banking products and insightful catalog information
             </Typography>
           </Box>
 
@@ -117,17 +133,20 @@ export default function Home() {
               justifyContent: 'center',
               alignItems: 'center',
               marginTop: { xs: '2rem', sm: '0' },
+              zIndex: 10,
+              animation: `${fadeIn} 1.2s ease-in-out`,
             }}
           >
             <img
               src={img1}
               alt="Bank Logo"
               style={{
-                width: '700px',
-                height: '500px',
+                width: '500px',
+                height: '400px',
                 objectFit: 'contain',
-                maxWidth: '450px',
-                maxHeight: '450px',
+                maxWidth: '400px',
+                maxHeight: '400px',
+                borderRadius: '10px', // Adding rounded corners to the image
               }}
             />
           </Box>
