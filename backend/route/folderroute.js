@@ -1,18 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const {
-    createFolder,
-    createSubfolder,
-    getFolderStructure,
-    editFolder,
-    deleteFolder,
-} = require('../controllers/FolderController');
+const FolderController = require('../controller/foldercontroller');
 
-// Routes for folder operations
-router.post('/create-folder', createFolder);
-router.post('/create-subfolder', createSubfolder);
-router.get('/folder-structure', getFolderStructure);
-router.post('/edit-folder', editFolder);
-router.delete('/delete-folder', deleteFolder);
+router.post('/create-folder',   FolderController.createFolder); // Ensure this is defined
+router.post('/create-subfolder', FolderController.createSubfolder);
+router.put('/edit', FolderController.editFolder);
+router.delete('/delete', FolderController.deleteFolder);
+router.put('/edit-subfolder', FolderController.editSubfolder);
+router.delete('/delete-subfolder', FolderController.deleteSubfolder);
+router.get('/structure', FolderController.getFolderStructure);
+
 
 module.exports = router;

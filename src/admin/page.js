@@ -38,6 +38,7 @@ const AdminPanel = () => {
     const [currentEditingFolder, setCurrentEditingFolder] = useState('');
     const [editSubfolderName, setEditSubfolderName] = useState('');
     const [currentEditingSubfolder, setCurrentEditingSubfolder] = useState('');
+    const [nestedSubfolderPath, setNestedSubfolderPath] = useState('');
 
     useEffect(() => {
         fetchFolderStructure();
@@ -45,7 +46,7 @@ const AdminPanel = () => {
 
     const fetchFolderStructure = async () => {
         try {
-            const response = await fetch('http://localhost:5000/folder-structure');
+            const response = await fetch('http://localhost:5000/api/folders/structure');
             const data = await response.json();
             setFolderStructure(data);
             setLoading(false);
@@ -60,7 +61,7 @@ const AdminPanel = () => {
             alert('Please enter a folder name.');
             return;
         }
-        await fetch('http://localhost:5000/create-folder', {
+        await fetch('http://localhost:5000/api/folders/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ folderName: newFolderName }),
@@ -68,19 +69,23 @@ const AdminPanel = () => {
         setNewFolderName('');
         fetchFolderStructure();
     };
-
     const createSubfolder = async () => {
         if (!selectedParentFolder || !newSubfolderName) {
             alert('Please select a parent folder and enter a subfolder name.');
             return;
         }
-        await fetch('http://localhost:5000/create-subfolder', {
+        await fetch('http://localhost:5000/api/folders/create-subfolder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parentFolderName: selectedParentFolder, subfolderName: newSubfolderName }),
+            body: JSON.stringify({
+                parentFolderName: selectedParentFolder,
+                subfolderNames: [newSubfolderName],
+                additionalNestedPath: nestedSubfolderPath // Pass the optional nested path
+            }),
         });
         setNewSubfolderName('');
-        fetchFolderStructure();
+        setNestedSubfolderPath(''); // Clear field after creation
+        fetchFolderStructure(); // Refresh the folder structure
     };
 
     const uploadFile = async () => {
@@ -92,7 +97,7 @@ const AdminPanel = () => {
         formData.append('file', file);
         formData.append('parentName', selectedParentFolder);
         formData.append('subfolderName', selectedSubfolder);
-        await fetch('http://localhost:5000/upload', {
+        await fetch('http://localhost:5000/api/files/upload', {
             method: 'POST',
             body: formData,
         });
@@ -101,7 +106,7 @@ const AdminPanel = () => {
     };
 
     const deleteFolder = async (folderName) => {
-        await fetch('http://localhost:5000/delete-folder', {
+        await fetch('http://localhost:5000/api/folders/delete', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ folderName }),
@@ -112,7 +117,7 @@ const AdminPanel = () => {
     const deleteFile = async (filePath) => {
         if (window.confirm(`Are you sure you want to delete the file?`)) {
             const relativePath = filePath.replace(/\\/g, '/').replace(/^.*\/uploads\//, '');
-            const response = await fetch('http://localhost:5000/delete-file', {
+            const response = await fetch('http://localhost:5000/api/files/delete-file', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ filePath: relativePath }),
@@ -139,21 +144,36 @@ const AdminPanel = () => {
         setEditFolderName(folderName);
         setCurrentEditingFolder(folderName);
     };
-
+    
     const saveEditFolder = async () => {
         if (!editFolderName) {
             alert('Please enter a new folder name.');
             return;
         }
-        await fetch('http://localhost:5000/edit-folder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currentFolderName: currentEditingFolder, newFolderName: editFolderName }),
-        });
-        setEditFolderName('');
-        setCurrentEditingFolder('');
-        fetchFolderStructure();
+    
+        try {
+            const response = await fetch('http://localhost:5000/api/folders/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentFolderName: currentEditingFolder, newFolderName: editFolderName }),
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert(`Error: ${errorText}`);
+                return;
+            }
+    
+            alert('Folder renamed successfully!');
+            setEditFolderName('');
+            setCurrentEditingFolder('');
+            fetchFolderStructure(); // Refresh the folder structure after editing
+        } catch (error) {
+            console.error('Error renaming folder:', error);
+            alert('An error occurred while renaming the folder. Please try again.');
+        }
     };
+    
 
     const startEditingSubfolder = (subfolderName) => {
         setEditSubfolderName(subfolderName);
@@ -171,7 +191,7 @@ const AdminPanel = () => {
         console.log("New Subfolder Name:", editSubfolderName);
     
         try {
-            const response = await fetch('http://localhost:5000/edit-subfolder', {
+            const response = await fetch('http://localhost:5000/api/folders/edit-subfolder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -304,9 +324,7 @@ const AdminPanel = () => {
                                 displayEmpty
                                 style={{ marginBottom: '16px', width: '100%', fontSize: '12px' }}
                             >
-                                <MenuItem value="">
-                                    <em>Select Parent Folder</em>
-                                </MenuItem>
+                              
                                 {folderStructure.map(folder => (
                                     <MenuItem key={folder.name} value={folder.name}>{folder.name}</MenuItem>
                                 ))}
@@ -317,9 +335,7 @@ const AdminPanel = () => {
                                 displayEmpty
                                 style={{ marginBottom: '16px', width: '100%', fontSize: '12px' }}
                             >
-                                <MenuItem value="">
-                                    <em>Select Subfolder</em>
-                                </MenuItem>
+                              
                                 {selectedParentFolder && folderStructure
                                     .find(folder => folder.name === selectedParentFolder)?.children.map(subfolder => (
                                         <MenuItem key={subfolder.name} value={subfolder.name}>{subfolder.name}</MenuItem>
@@ -377,9 +393,7 @@ const AdminPanel = () => {
                                 displayEmpty
                                 style={{ marginBottom: '16px', width: '100%', fontSize: '10px' }}
                             >
-                                <MenuItem value="">
-                                    <em>Select Parent Folder</em>
-                                </MenuItem>
+                                
                                 {folderStructure.map(folder => (
                                     <MenuItem key={folder.name} value={folder.name}>{folder.name}</MenuItem>
                                 ))}
@@ -391,6 +405,15 @@ const AdminPanel = () => {
                                 onChange={(e) => setNewSubfolderName(e.target.value)}
                                 style={{ marginBottom: '16px', width: '100%' }}
                             />
+                            <TextField
+    label="Optional Nested Path"
+    value={nestedSubfolderPath}
+    onChange={(e) => setNestedSubfolderPath(e.target.value)}
+    placeholder="e.g., sub1/sub2"
+    fullWidth
+    style={{ margin: '10px 0' }}
+/>
+
                         </CardContent>
                         <CardActions>
                             <Button

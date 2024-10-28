@@ -9,6 +9,7 @@ import LoginPage from './pages/login';
 import { AuthProvider } from './context/Authcontext'; // Adjust the path if necessary
 import ProtectedRoute from './context/ProtectedRoute'; // Adjust the path if necessary
 import Main from './pages/main';
+import FolderManager from './admin/folders';
 
 
 const App = () => {
@@ -43,6 +44,7 @@ const MainContent = () => {
                     />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/main" element={<Main />} /> {/* Main PDF Viewer Page */}
+                    <Route path="/folders" element={<FolderManager />} /> 
                 </Routes>
             </div>
 

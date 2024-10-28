@@ -10,7 +10,7 @@ const Navbar = () => {
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Logo Section */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img src={Logoimage} alt="Logo" style={{ width: '80px', height: '80px', marginRight: '10px', borderRadius: '50%' }} />
+          <img src={Logoimage} alt="Logo" style={{ width: '90px', height: '80px',paddingLeft:'20px', marginRight: '10px', borderRadius: '50%' }} />
           <Typography variant="h6" sx={{ color: '#333', fontWeight: 'bold', fontSize: '1.5rem' }}>
             Product Catalog
           </Typography>
@@ -31,7 +31,7 @@ const Navbar = () => {
               transition: 'background-color 0.3s', // Smooth transition for button
             }}
           >
-            login
+            Login
           </Button>
           </Link>
         </div>
