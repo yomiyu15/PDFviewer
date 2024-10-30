@@ -1,436 +1,288 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-    Button,
-    TextField,
-    List,
-    ListItem,
-    ListItemText,
-    IconButton,
-    Typography,
-    Divider,
-    Collapse,
-    Select,
-    MenuItem,
-    Card,
-    CardContent,
-    CardActions,
-    Grid,
-    Container,
-} from '@mui/material';
-import FolderIcon from '@mui/icons-material/Folder';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+  TextField,
+} from "@mui/material";
+import CreateFolder from "./createfolders";
+import CreateSubfolder from "./createsubfolder";
+import UploadFile from "./uploadfile";
+import FolderStructure from "./folderstructure";
 
 const AdminPanel = () => {
-    const [folderStructure, setFolderStructure] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [newFolderName, setNewFolderName] = useState('');
-    const [newSubfolderName, setNewSubfolderName] = useState('');
-    const [selectedParentFolder, setSelectedParentFolder] = useState('');
-    const [selectedSubfolder, setSelectedSubfolder] = useState('');
-    const [file, setFile] = useState(null);
-    const [openFolders, setOpenFolders] = useState({});
-    
-    // Edit states
-    const [editFolderName, setEditFolderName] = useState('');
-    const [currentEditingFolder, setCurrentEditingFolder] = useState('');
-    const [editSubfolderName, setEditSubfolderName] = useState('');
-    const [currentEditingSubfolder, setCurrentEditingSubfolder] = useState('');
-    const [nestedSubfolderPath, setNestedSubfolderPath] = useState('');
+  const [folderStructure, setFolderStructure] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [openFolders, setOpenFolders] = useState({});
+  const [editingFolder, setEditingFolder] = useState(null);
+  const [editingSubfolder, setEditingSubfolder] = useState(null); // New state for subfolder editing
+  const [newFolderName, setNewFolderName] = useState('');
+  const [newSubfolderName, setNewSubfolderName] = useState(''); // New state for new subfolder name
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState('');
+  const [subfolderToDelete, setSubfolderToDelete] = useState(''); // New state for subfolder deletion
 
-    useEffect(() => {
-        fetchFolderStructure();
-    }, []);
+  useEffect(() => {
+    fetchFolderStructure();
+  }, []);
 
-    const fetchFolderStructure = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/api/folders/structure');
-            const data = await response.json();
-            setFolderStructure(data);
-            setLoading(false);
-        } catch (err) {
-            setError(err);
-            setLoading(false);
-        }
-    };
+  const fetchFolderStructure = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/folders/structure");
+      const data = await response.json();
+      setFolderStructure(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
+    }
+  };
 
-    const createFolder = async () => {
-        if (!newFolderName) {
-            alert('Please enter a folder name.');
-            return;
-        }
-        await fetch('http://localhost:5000/api/folders/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ folderName: newFolderName }),
-        });
-        setNewFolderName('');
-        fetchFolderStructure();
-    };
-    const createSubfolder = async () => {
-        if (!selectedParentFolder || !newSubfolderName) {
-            alert('Please select a parent folder and enter a subfolder name.');
-            return;
-        }
-        await fetch('http://localhost:5000/api/folders/create-subfolder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                parentFolderName: selectedParentFolder,
-                subfolderNames: [newSubfolderName],
-                additionalNestedPath: nestedSubfolderPath // Pass the optional nested path
-            }),
-        });
-        setNewSubfolderName('');
-        setNestedSubfolderPath(''); // Clear field after creation
-        fetchFolderStructure(); // Refresh the folder structure
-    };
+  const handleToggleFolder = (folderName) => {
+    setOpenFolders((prev) => ({
+      ...prev,
+      [folderName]: !prev[folderName],
+    }));
+  };
 
-    const uploadFile = async () => {
-        if (!selectedParentFolder || !selectedSubfolder || !file) {
-            alert('Please select a parent folder, subfolder, and choose a file.');
-            return;
-        }
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('parentName', selectedParentFolder);
-        formData.append('subfolderName', selectedSubfolder);
-        await fetch('http://localhost:5000/api/files/upload', {
-            method: 'POST',
-            body: formData,
-        });
-        setFile(null);
-        fetchFolderStructure();
-    };
+  const startEditingFolder = (folderName) => {
+    setEditingFolder(folderName);
+    setNewFolderName(folderName);
+  };
 
-    const deleteFolder = async (folderName) => {
-        await fetch('http://localhost:5000/api/folders/delete', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ folderName }),
-        });
-        fetchFolderStructure();
-    };
+  const startEditingSubfolder = (subfolderName) => {
+    setEditingSubfolder(subfolderName);
+    setNewSubfolderName(subfolderName); // Pre-fill the input with the current subfolder name
+  };
 
-    const deleteFile = async (filePath) => {
-        if (window.confirm(`Are you sure you want to delete the file?`)) {
-            const relativePath = filePath.replace(/\\/g, '/').replace(/^.*\/uploads\//, '');
-            const response = await fetch('http://localhost:5000/api/files/delete-file', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filePath: relativePath }),
-            });
+  const handleEditSubmit = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/folders/edit`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentFolderName: editingFolder, newFolderName }),
+      });
 
-            if (response.ok) {
-                fetchFolderStructure();
-            } else {
-                const errorMessage = await response.text();
-                console.error('Error deleting file:', errorMessage);
-            }
-        }
-    };
+      if (response.ok) {
+        await fetchFolderStructure();
+      } else {
+        const errorMessage = await response.text();
+        console.error("Error editing folder:", errorMessage);
+      }
+    } catch (err) {
+      console.error("Error editing folder:", err);
+    } finally {
+      setEditingFolder(null);
+      setNewFolderName('');
+    }
+  };
 
-    const handleToggleFolder = (folderName) => {
-        setOpenFolders((prev) => ({
-            ...prev,
-            [folderName]: !prev[folderName],
-        }));
-    };
+  const handleEditSubfolderSubmit = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/subfolders/edit-subfolder`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentSubfolderName: editingSubfolder, newSubfolderName }),
+      });
 
-    // New edit functions
-    const startEditingFolder = (folderName) => {
-        setEditFolderName(folderName);
-        setCurrentEditingFolder(folderName);
-    };
-    
-    const saveEditFolder = async () => {
-        if (!editFolderName) {
-            alert('Please enter a new folder name.');
-            return;
-        }
-    
-        try {
-            const response = await fetch('http://localhost:5000/api/folders/edit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currentFolderName: currentEditingFolder, newFolderName: editFolderName }),
-            });
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                alert(`Error: ${errorText}`);
-                return;
-            }
-    
-            alert('Folder renamed successfully!');
-            setEditFolderName('');
-            setCurrentEditingFolder('');
-            fetchFolderStructure(); // Refresh the folder structure after editing
-        } catch (error) {
-            console.error('Error renaming folder:', error);
-            alert('An error occurred while renaming the folder. Please try again.');
-        }
-    };
-    
+      if (response.ok) {
+        await fetchFolderStructure();
+      } else {
+        const errorMessage = await response.text();
+        console.error("Error editing subfolder:", errorMessage);
+      }
+    } catch (err) {
+      console.error("Error editing subfolder:", err);
+    } finally {
+      setEditingSubfolder(null);
+      setNewSubfolderName('');
+    }
+  };
 
-    const startEditingSubfolder = (subfolderName) => {
-        setEditSubfolderName(subfolderName);
-        setCurrentEditingSubfolder(subfolderName);
-    };
+  const openDeleteConfirmation = (folderName) => {
+    setFolderToDelete(folderName);
+    setDeleteConfirmationOpen(true);
+  };
 
-    const saveEditSubfolder = async () => {
-        if (!editSubfolderName) {
-            alert('Please enter a new subfolder name.');
-            return;
-        }
-    
-        console.log("Parent Folder:", selectedParentFolder);
-        console.log("Current Subfolder:", currentEditingSubfolder);
-        console.log("New Subfolder Name:", editSubfolderName);
-    
-        try {
-            const response = await fetch('http://localhost:5000/api/folders/edit-subfolder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    parentFolderName: selectedParentFolder,
-                    currentSubfolderName: currentEditingSubfolder,
-                    newSubfolderName: editSubfolderName
-                }),
-            });
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
-            }
-    
-            setEditSubfolderName('');
-            setCurrentEditingSubfolder('');
-            fetchFolderStructure();
-        } catch (error) {
-            alert(error.message);
-        }
-    };
-    
+  const openDeleteSubfolderConfirmation = (subfolderName) => {
+    setSubfolderToDelete(subfolderName);
+    setDeleteConfirmationOpen(true);
+  };
 
-    const renderFiles = (files, level) => (
-        files.map((file) => (
-            <ListItem key={file.path} style={{ paddingLeft: `${(level + 1) * 20}px`, fontSize: 'inherit' }}>
-                <PictureAsPdfIcon />
-                <ListItemText primary={file.name} style={{ fontSize: 'inherit' }} />
-                <IconButton onClick={() => deleteFile(file.path)} size="small">
-                    <DeleteIcon fontSize="small" />
-                </IconButton>
-            </ListItem>
-        ))
-    );
+  const handleDeleteFolder = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/folders/delete`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ folderName: folderToDelete }),
+      });
 
-    const renderSubfolders = (subfolders, parentFolderName, level) => (
-        subfolders.map((subfolder) => (
-            <div key={subfolder.name}>
-                <ListItem button onClick={() => handleToggleFolder(subfolder.name)} style={{ paddingLeft: `${(level + 1) * 20}px`, fontSize: 'inherit' }}>
-                    <FolderIcon style={{ color: '#FFD54F' }} />
-                    {currentEditingSubfolder === subfolder.name ? (
-                        <TextField
-                            value={editSubfolderName}
-                            onChange={(e) => setEditSubfolderName(e.target.value)}
-                            onBlur={saveEditSubfolder}
-                            style={{ width: '60%', marginLeft: '10px' }}
-                        />
-                    ) : (
-                        <ListItemText primary={subfolder.name} style={{ fontSize: 'inherit' }} />
-                    )}
-                    <IconButton onClick={() => startEditingSubfolder(subfolder.name)} size="small">
-                        <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => deleteFolder(subfolder.name)} size="small">
-                        <DeleteIcon fontSize="small" />
-                    </IconButton>
-                </ListItem>
-                <Collapse in={openFolders[subfolder.name]} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                        {renderFiles(subfolder.children || [], level + 1)}
-                    </List>
-                </Collapse>
-                <Divider />
-            </div>
-        ))
-    );
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error deleting folder:", errorData);
+        return; // Exit if the response is not OK
+      }
 
-    const renderFolder = (folder) => (
-        <div key={folder.name}>
-            <ListItem button onClick={() => handleToggleFolder(folder.name)} style={{ paddingLeft: '0', fontSize: 'inherit' }}>
-                <FolderIcon style={{ color: '#FFD54F' }} />
-                {currentEditingFolder === folder.name ? (
-                    <TextField
-                        value={editFolderName}
-                        onChange={(e) => setEditFolderName(e.target.value)}
-                        onBlur={saveEditFolder}
-                        style={{ width: '60%', marginLeft: '10px' }}
-                    />
-                ) : (
-                    <ListItemText primary={folder.name} style={{ fontSize: 'inherit' }} />
-                )}
-                <IconButton sx={{color:"#4caf50 "}} onClick={() => startEditingFolder(folder.name)} size="small">
-                    <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton sx={{color:"#f44336"}} onClick={() => deleteFolder(folder.name)} size="small">
-                    <DeleteIcon fontSize="small" />
-                </IconButton>
-            </ListItem>
-            <Collapse in={openFolders[folder.name]} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                    {renderSubfolders(folder.children || [], folder.name, 0)}
-                </List>
-            </Collapse>
-            <Divider />
-        </div>
-    );
+      await fetchFolderStructure();
+    } catch (err) {
+      console.error("Error deleting folder:", err);
+    } finally {
+      setDeleteConfirmationOpen(false);
+      setFolderToDelete('');
+    }
+  };
 
-    return (
-        <Container maxWidth="lg" style={{ marginTop: '50px', fontSize: '12px', height: '200vh' }}>
-            <Typography variant="h4" gutterBottom style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' ,marginBottom:"20px"}}>
-                Admin Panel
-            </Typography>
-            {loading && <Typography style={{ fontSize: '12px', textAlign: 'center' }}>Loading...</Typography>}
-            {error && <Typography color="error" style={{ fontSize: '12px', textAlign: 'center' }}>Error: {error.message}</Typography>}
-            
-            <Grid container spacing={1}>
-                <Grid item xs={12} md={4}>
-                    <Card style={{ padding: '8px' }}>
-                        <CardContent>
-                            <Typography variant="h6" style={{ fontSize: '16px', fontWeight: "bold" }}>Folder Structure</Typography>
-                            <List>
-                                {folderStructure.map((folder) => renderFolder(folder))}
-                            </List>
-                        </CardContent>
-                    </Card>
-                    
-                </Grid>
+  const handleDeleteSubfolder = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/folders/delete-subfolder`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          // Assuming you might need to include a parent folder name
+          parentFolder: "YourParentFolderName", // Replace with the actual parent folder name
+          subfolderName: subfolderToDelete 
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.text(); // Use text() to capture non-JSON responses
+        console.error("Error deleting subfolder:", errorData);
+        return; // Exit if the response is not OK
+      }
+  
+      await fetchFolderStructure();
+    } catch (err) {
+      console.error("Error deleting subfolder:", err);
+    } finally {
+      setDeleteConfirmationOpen(false);
+      setSubfolderToDelete('');
+    }
+  };
+  
 
-                <Grid item xs={12} md={8}>
-                    {/* Upload File Section */}
-                    <Card style={{ marginBottom: '10px', padding: '8px' }}>
-                        <CardContent>
-                            <Typography variant="h6" style={{ fontSize: '16px',fontWeight: "bold" }}>Upload File</Typography>
-                            <Select
-                                value={selectedParentFolder}
-                                onChange={(e) => {
-                                    setSelectedParentFolder(e.target.value);
-                                    setSelectedSubfolder(''); // Reset subfolder selection
-                                }}
-                                displayEmpty
-                                style={{ marginBottom: '16px', width: '100%', fontSize: '12px' }}
-                            >
-                              
-                                {folderStructure.map(folder => (
-                                    <MenuItem key={folder.name} value={folder.name}>{folder.name}</MenuItem>
-                                ))}
-                            </Select>
-                            <Select
-                                value={selectedSubfolder}
-                                onChange={(e) => setSelectedSubfolder(e.target.value)}
-                                displayEmpty
-                                style={{ marginBottom: '16px', width: '100%', fontSize: '12px' }}
-                            >
-                              
-                                {selectedParentFolder && folderStructure
-                                    .find(folder => folder.name === selectedParentFolder)?.children.map(subfolder => (
-                                        <MenuItem key={subfolder.name} value={subfolder.name}>{subfolder.name}</MenuItem>
-                                    ))}
-                            </Select>
-                            <input
-                                type="file"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                style={{ marginBottom: '16px', width: '100%', fontSize: '12px' }}
-                            />
-                        </CardContent>
-                        <CardActions>
-                            <Button
-                                variant="contained"
-                                sx={{ backgroundColor: '#00adef', color: '#fff', marginTop: 2 }}
-                                onClick={uploadFile}
-                                style={{ width: '100%', fontSize: '10px' }}
-                            >
-                                Upload File
-                            </Button>
-                        </CardActions>
-                    </Card>
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error loading folders</div>;
 
-                    {/* Create Folder Section */}
-                    <Card style={{ marginBottom: '10px', padding: '8px' }}>
-                        <CardContent>
-                            <Typography variant="h6" style={{ fontSize: '16px' ,fontWeight: "bold"}}>Create Folder</Typography>
-                            <TextField
-                                label="New Folder Name"
-                                variant="outlined"
-                                value={newFolderName}
-                                onChange={(e) => setNewFolderName(e.target.value)}
-                                style={{ marginBottom: '16px', width: '100%' }}
-                            />
-                        </CardContent>
-                        <CardActions>
-                            <Button
-                                 variant="contained"
-                                 sx={{ backgroundColor: '#00adef', color: '#fff', marginTop: 2 }}
-                                onClick={createFolder}
-                                style={{ width: '100%', fontSize: '10px' }}
-                            >
-                                Create Folder
-                            </Button>
-                        </CardActions>
-                    </Card>
+  return (
+    <Container sx={{ marginTop: "100px", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 64px)" }}>
+      <Grid container spacing={3} sx={{ flexGrow: 1 }}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>Folder Structure</Typography>
+              <FolderStructure
+                folderStructure={folderStructure}
+                openFolders={openFolders}
+                handleToggleFolder={handleToggleFolder}
+                startEditingFolder={startEditingFolder}
+                startEditingSubfolder={startEditingSubfolder} // Pass the editing function
+                deleteFolder={handleDeleteFolder} // Pass the delete folder function
+                deleteSubfolder={handleDeleteSubfolder} // Pass the delete subfolder function
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Box sx={{ mb: 1 }}>
+                <CreateFolder fetchFolderStructure={fetchFolderStructure} />
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <CreateSubfolder fetchFolderStructure={fetchFolderStructure} />
+              </Box>
+              <Box>
+                <UploadFile fetchFolderStructure={fetchFolderStructure} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-                    {/* Create Subfolder Section */}
-                    <Card style={{ marginBottom: '10px', padding: '8px' }}>
-                        <CardContent>
-                            <Typography variant="h6" style={{ fontSize: '16px',fontWeight: "bold" }}>Create Subfolder</Typography>
-                            <Select
-                                value={selectedParentFolder}
-                                onChange={(e) => setSelectedParentFolder(e.target.value)}
-                                displayEmpty
-                                style={{ marginBottom: '16px', width: '100%', fontSize: '10px' }}
-                            >
-                                
-                                {folderStructure.map(folder => (
-                                    <MenuItem key={folder.name} value={folder.name}>{folder.name}</MenuItem>
-                                ))}
-                            </Select>
-                            <TextField
-                                label="New Subfolder Name"
-                                variant="outlined"
-                                value={newSubfolderName}
-                                onChange={(e) => setNewSubfolderName(e.target.value)}
-                                style={{ marginBottom: '16px', width: '100%' }}
-                            />
-                            <TextField
-    label="Optional Nested Path"
-    value={nestedSubfolderPath}
-    onChange={(e) => setNestedSubfolderPath(e.target.value)}
-    placeholder="e.g., sub1/sub2"
-    fullWidth
-    style={{ margin: '10px 0' }}
-/>
+      {/* Edit Folder Dialog */}
+      <Dialog open={Boolean(editingFolder)} onClose={() => setEditingFolder(null)}>
+        <DialogTitle>Edit Folder</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Folder Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingFolder(null)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleEditSubmit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                        </CardContent>
-                        <CardActions>
-                            <Button
-                             variant="contained"
-                             sx={{ backgroundColor: '#00adef', color: '#fff', marginTop: 2 }}
-                               
-                                onClick={createSubfolder}
-                                style={{ width: '100%', fontSize: '10px' }}
-                            >
-                                Create Subfolder
-                            </Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            </Grid>
-        </Container>
-    );
+      {/* Edit Subfolder Dialog */}
+      <Dialog open={Boolean(editingSubfolder)} onClose={() => setEditingSubfolder(null)}>
+        <DialogTitle>Edit Subfolder</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Subfolder Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newSubfolderName}
+            onChange={(e) => setNewSubfolderName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingSubfolder(null)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleEditSubfolderSubmit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmationOpen} onClose={() => setDeleteConfirmationOpen(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this folder/subfolder?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmationOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={folderToDelete ? handleDeleteFolder : handleDeleteSubfolder} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
 };
 
 export default AdminPanel;

@@ -138,7 +138,7 @@ const App = () => {
             {/* Apply bold style to folder name only */}
             <Typography
               sx={{
-                fontWeight: "bold", // Bold only the folder name
+               // Bold only the folder name
               }}
             >
               {capitalizeFileName(item.name)}
