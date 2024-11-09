@@ -1,87 +1,59 @@
-import React from "react";
-import {
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Collapse,
-  Divider,
-} from "@mui/material";
-import FolderIcon from "@mui/icons-material/Folder";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import React, { useState, useEffect } from 'react';
+import { getFolderStructure } from './api';
+import { List, ListItem, ListItemText, ListItemIcon, Collapse, IconButton } from '@mui/material';
+import FolderIcon from '@mui/icons-material/Folder';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import FileIcon from '@mui/icons-material/InsertDriveFile';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-const FolderStructure = ({
-  folderStructure,
-  openFolders,
-  handleToggleFolder,
-  startEditingFolder,
-  startEditingSubfolder, // Add this line
-  deleteFolder,
-  deleteSubfolder, // Add this line
-}) => {
-  const renderSubfolders = (subfolders, level) =>
-    subfolders.map((subfolder) => (
-      <div key={subfolder.name}>
-        <ListItem
-          button
-          onClick={() => handleToggleFolder(subfolder.name)}
-          style={{ paddingLeft: `${(level + 1) * 20}px`, fontSize: "inherit" }}
-        >
-          <ListItemText primary={subfolder.name} style={{ fontSize: "inherit" }} />
-          <IconButton onClick={() => startEditingSubfolder(subfolder.name)} size="small">
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton onClick={() => deleteSubfolder(subfolder.name)} size="small">
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+const FolderStructure = () => {
+  const [folders, setFolders] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getFolderStructure();
+        setFolders(response.data);
+      } catch (error) {
+        console.error('Error fetching folder structure:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const renderFolders = (items) => {
+    return items.map((item) => (
+      <div key={item.path}>
+        <ListItem button>
+          <ListItemIcon>
+            {item.type === 'folder' ? (
+              item.children.length ? <FolderOpenIcon /> : <FolderIcon />
+            ) : (
+              <FileIcon />
+            )}
+          </ListItemIcon>
+          <ListItemText primary={item.name} />
+          {item.type === 'folder' && item.children.length > 0 && (
+            <IconButton edge="end">
+              <ExpandMoreIcon />
+            </IconButton>
+          )}
         </ListItem>
-        <Collapse in={openFolders[subfolder.name]} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {/* Render subfolders and files recursively */}
-            {renderSubfolders(subfolder.children || [], level + 1)}
-          </List>
-        </Collapse>
-        <Divider />
+        {item.type === 'folder' && item.children.length > 0 && (
+          <Collapse in={true} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {renderFolders(item.children)}
+            </List>
+          </Collapse>
+        )}
       </div>
     ));
-  
-  const renderFolder = (folder) => (
-    <div key={folder.name}>
-      <ListItem
-        button
-        onClick={() => handleToggleFolder(folder.name)}
-        style={{ paddingLeft: "0", fontSize: "inherit" }}
-      >
-        <FolderIcon style={{ color: "#FFD54F" }} />
-        <ListItemText primary={folder.name} style={{ fontSize: "inherit" }} />
-        <IconButton
-          sx={{ color: "#4caf50 " }}
-          onClick={() => startEditingFolder(folder.name)}
-          size="small"
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          sx={{ color: "#f44336" }}
-          onClick={() => deleteFolder(folder.name)}
-          size="small"
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </ListItem>
-      <Collapse in={openFolders[folder.name]} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {renderSubfolders(folder.children || [], 1)}
-        </List>
-      </Collapse>
-      <Divider />
-    </div>
-  );
+  };
 
   return (
     <List>
-      {folderStructure.map((folder) => renderFolder(folder))}
+      {renderFolders(folders)}
     </List>
   );
 };

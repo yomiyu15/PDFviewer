@@ -1,73 +1,50 @@
-import React, { useState } from "react";
-import { TextField, Button, Box, Typography } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add'; // Optional: for an icon on the button
+import React, { useState } from 'react';
+import { TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { createFolder } from './api';
 
-const CreateFolder = ({ fetchFolderStructure }) => {
-  const [newFolderName, setNewFolderName] = useState("");
+const FolderCreator = ({ open, onClose }) => {
+  const [folderName, setFolderName] = useState('');
+  const [parentFolder, setParentFolder] = useState('');
 
-  const createFolder = async () => {
-    if (!newFolderName) {
-      alert("Please enter a folder name.");
-      return;
+  const handleCreateFolder = async () => {
+    try {
+      const data = { parentFolderPath: parentFolder, folderName };
+      const response = await createFolder(data);
+      console.log('Folder created successfully:', response);
+      onClose();
+    } catch (error) {
+      console.error('Error creating folder:', error.response?.data || error.message);
     }
-    await fetch("http://localhost:5000/api/folders/create-folder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ folderName: newFolderName }),
-    });
-    setNewFolderName("");
-    fetchFolderStructure();
   };
-
+  
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        p: 3, 
-        borderRadius: 2, 
-        boxShadow: 5, 
-        bgcolor: 'background.paper',
-        width: '100%', // Make full width
-        maxWidth: 600, // Optional: set a maximum width
-        mx: 'auto', 
-        border: '1px solid #e0e0e0' // Light border for a polished look
-      }}
-    >
-      <Typography 
-        variant="h6" 
-        sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }} 
-        color="primary"
-      >
-        Create New Folder
-      </Typography>
-      <TextField
-        variant="outlined"
-        value={newFolderName}
-        onChange={(e) => setNewFolderName(e.target.value)}
-        placeholder="Enter folder name"
-        fullWidth
-        sx={{ mb: 2 }}
-      />
-      <Button 
-        variant="contained" 
-        onClick={createFolder} 
-        endIcon={<AddIcon />}
-        sx={{ 
-          textTransform: 'none', // Prevent text from being capitalized
-          bgcolor: '#00adef', // Custom color
-          '&:hover': {
-            bgcolor: '#0095d9', // Darker shade on hover
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)', // Add a shadow on hover
-          },
-          width: '100%', // Full width for the button
-        }}
-      >
-        Create folder
-      </Button>
-    </Box>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Create Folder</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Folder Name"
+          fullWidth
+          variant="outlined"
+          value={folderName}
+          onChange={(e) => setFolderName(e.target.value)}
+        />
+        <TextField
+          margin="dense"
+          label="Parent Folder (Optional)"
+          fullWidth
+          variant="outlined"
+          value={parentFolder}
+          onChange={(e) => setParentFolder(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">Cancel</Button>
+        <Button onClick={handleCreateFolder} color="primary">Create</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default CreateFolder;
+export default FolderCreator;
