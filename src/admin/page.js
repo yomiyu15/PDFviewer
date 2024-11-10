@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Grid, Paper, TextField, Button, Typography, IconButton } from '@mui/material';
+import { Grid, Paper, TextField, Button, Typography, IconButton, Snackbar, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const FolderManager = () => {
   // State for Create Folder
@@ -16,6 +17,19 @@ const FolderManager = () => {
 
   // State for Folder Structure
   const [folderStructure, setFolderStructure] = useState([]);
+
+  // State for Snackbar (Success messages)
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarColor, setSnackbarColor] = useState('');
+
+  // State for Edit Dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentItemPath, setCurrentItemPath] = useState('');
+  const [currentItemName, setCurrentItemName] = useState('');
+
+  // State for Delete Confirmation
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Fetch Folder Structure Function
   const fetchFolderStructure = async () => {
@@ -33,6 +47,13 @@ const FolderManager = () => {
     fetchFolderStructure();
   }, []);
 
+  // Display Success Snackbar
+  const showSnackbar = (message, color) => {
+    setSnackbarMessage(message);
+    setSnackbarColor(color);
+    setSnackbarOpen(true);
+  };
+
   // Create Folder Function
   const createFolder = async () => {
     if (!newFolderName) {
@@ -45,7 +66,7 @@ const FolderManager = () => {
         parentFolderPath,
         folderName: newFolderName
       });
-      alert(response.data.message);
+      showSnackbar('Folder created successfully', 'green');
       setNewFolderName('');
       fetchFolderStructure(); // Refresh folder structure after creating
     } catch (error) {
@@ -70,10 +91,10 @@ const FolderManager = () => {
     formData.append('folderPath', folderPath);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/folders/upload-file', formData, {
+      const response = await axios.post('http://localhost:5000/api/files/upload-file', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert(response.data.message);
+      showSnackbar('File uploaded successfully', 'green');
       fetchFolderStructure(); // Refresh folder structure after file upload
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -81,20 +102,27 @@ const FolderManager = () => {
     }
   };
 
-  // Rename Item Function
-  const renameItem = async (path) => {
-    const newName = prompt('Enter new name for the item:');
-    if (!newName) {
+  // Rename Item Function (open edit dialog)
+  const openEditDialog = (path, name) => {
+    setCurrentItemPath(path);
+    setCurrentItemName(name);
+    setIsEditDialogOpen(true);
+  };
+
+  // Submit Rename Item Function
+  const renameItem = async () => {
+    if (!currentItemName) {
       alert('Please enter a new name');
       return;
     }
 
     try {
       const response = await axios.put('http://localhost:5000/api/folders/rename-item', {
-        itemPath: path,
-        newName
+        itemPath: currentItemPath,
+        newName: currentItemName
       });
-      alert(response.data.message);
+      showSnackbar('Item renamed successfully', 'green');
+      setIsEditDialogOpen(false);
       fetchFolderStructure(); // Refresh folder structure after renaming
     } catch (error) {
       console.error('Error renaming item:', error);
@@ -102,18 +130,20 @@ const FolderManager = () => {
     }
   };
 
-  // Delete Item Function
-  const deleteItem = async (path) => {
-    if (!path) {
-      alert('Please provide the item path');
-      return;
-    }
+  // Delete Item Function (open delete confirmation dialog)
+  const openDeleteDialog = (path) => {
+    setCurrentItemPath(path);
+    setIsDeleteDialogOpen(true);
+  };
 
+  // Confirm Deletion
+  const confirmDeleteItem = async () => {
     try {
       const response = await axios.delete('http://localhost:5000/api/folders/delete-item', {
-        data: { itemPath: path }
+        data: { itemPath: currentItemPath }
       });
-      alert(response.data.message);
+      showSnackbar('Item deleted successfully', 'red');
+      setIsDeleteDialogOpen(false);
       fetchFolderStructure(); // Refresh folder structure after deletion
     } catch (error) {
       console.error('Error deleting item:', error);
@@ -121,6 +151,7 @@ const FolderManager = () => {
     }
   };
 
+  // Render Folder Structure
   const renderFolderStructure = (folders) => {
     return folders.map((folder, index) => (
       <div key={index} style={{ marginLeft: folder.type === 'folder' ? '20px' : '0' }}>
@@ -130,16 +161,16 @@ const FolderManager = () => {
 
           {/* Edit and Delete Icons */}
           <IconButton
-            onClick={() => renameItem(folder.path)} // Trigger rename item
+            onClick={() => openEditDialog(folder.path, folder.name)} // Trigger edit dialog
             style={{ marginLeft: 'auto', padding: '4px' }}
           >
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize="small" style={{ color: '#0073e6' }} />
           </IconButton>
           <IconButton
-            onClick={() => deleteItem(folder.path)} // Trigger delete item
+            onClick={() => openDeleteDialog(folder.path)} // Trigger delete confirmation dialog
             style={{ marginLeft: '4px', padding: '4px' }}
           >
-            <DeleteIcon fontSize="small" />
+            <DeleteIcon fontSize="small" style={{ color: 'red' }} />
           </IconButton>
         </div>
 
@@ -153,10 +184,11 @@ const FolderManager = () => {
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} style={{ marginTop: '20px' }}> {/* Added marginTop */}
       {/* Left Side - Folder Structure */}
       <Grid item xs={12} md={6}>
         <Paper elevation={3} style={{ padding: '16px' }}>
+          <Typography variant="h6">Admin Panel</Typography>
           <Typography variant="h5" sx={{ fontSize: '14px' }}>Folder Structure</Typography>
           <div>{renderFolderStructure(folderStructure)}</div>
         </Paper>
@@ -213,6 +245,50 @@ const FolderManager = () => {
           </Button>
         </Paper>
       </Grid>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        style={{
+          backgroundColor: snackbarColor === 'green' ? 'green' : 'red',
+        }}
+      />
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)}>
+        <DialogTitle>Edit Item</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="New Name"
+            value={currentItemName}
+            onChange={(e) => setCurrentItemName(e.target.value)}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={renameItem} color="primary">
+            Rename
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Item</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this item?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDeleteItem} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };

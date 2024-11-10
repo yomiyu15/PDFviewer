@@ -32,7 +32,7 @@ const App = () => {
 
   // Fetch folder structure from API
   useEffect(() => {
-    fetch("http://localhost:5000/api/folders/structure")
+    fetch("http://localhost:5000/api/folders/folder-structure")
       .then((res) => res.json())
       .then((data) => setFolderStructure(data))
       .catch((err) => console.error("Error fetching folder structure:", err));
