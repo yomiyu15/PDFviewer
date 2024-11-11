@@ -4,7 +4,7 @@ import { Grid, Paper, TextField, Button, Typography, IconButton, Snackbar, Dialo
 import FolderIcon from '@mui/icons-material/Folder';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
 
 const FolderManager = () => {
   // State for Create Folder

@@ -6,6 +6,7 @@ import LoginPage from "./pages/login";
 import { AuthProvider } from "./context/Authcontext"; // Adjust the path if necessary
 import ProtectedRoute from "./context/ProtectedRoute"; // Adjust the path if necessary
 import Main from "./components/main";  // Adjust the path as necessary
+import Faq from '../src/admin/faq';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const MainContent = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/start" element={<Main />} />
+      <Route path="/faq" element={<Faq />} />
       <Route
         path="/admin"
         element={
