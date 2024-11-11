@@ -14,7 +14,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import { Document, Page } from "react-pdf";
-import Introduction from "../components/introdction";
+import Introduction from "../components/introduction";
 import { ListItem, ListItemText } from "@mui/material";
 
 
