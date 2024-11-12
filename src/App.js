@@ -7,7 +7,8 @@ import { AuthProvider } from "./context/Authcontext"; // Adjust the path if nece
 import ProtectedRoute from "./context/ProtectedRoute"; // Adjust the path if necessary
 import Main from "./components/main";  // Adjust the path as necessary
 import Faq from '../src/admin/faq';
-import PdfViewer from "./components/pdfviewer";
+
+
 
 const App = () => {
   return (
@@ -25,7 +26,7 @@ const MainContent = () => {
       <Route path="/" element={<Home />} />
       <Route path="/start" element={<Main />} />
       <Route path="/faq" element={<Faq />} />
-      <Route path="/pdf" element={<PdfViewer />} />
+      <Route path="/faq" element={<Faq />} />
       <Route
         path="/admin"
         element={
