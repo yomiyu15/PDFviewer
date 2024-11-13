@@ -120,7 +120,7 @@ export default function AppAppBar() {
                 onChange={(e) => handleSearch(e.target.value)}
                 sx={{ width: '100%' }}
               />
-              {/* Display search results below search box */}
+              
               {filteredFiles.length > 0 && searchQuery && (
                 <Box
                   sx={{

@@ -198,16 +198,18 @@ export default function Features() {
           gap: 2,
         }}
       >
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 2,
-            height: "100%",
-          }}
-        >
-          {renderFolderStructure(folderStructure)}
-        </Box>
+       <Box
+  sx={{
+    display: { xs: "none", sm: "flex" },
+    flexDirection: "column",
+    gap: 2,
+    height: "100%",
+    width: { sm: "250px", md: "400px" }, // Set width for different breakpoints
+  }}
+>
+  {renderFolderStructure(folderStructure)}
+</Box>
+
         <MobileLayout
           selectedItemIndex={selectedItemIndex}
           handleItemClick={handleItemClick}
@@ -220,10 +222,10 @@ export default function Features() {
           }}
         >
     <Card variant="outlined" sx={{ height: '100%', width: '100%', overflow: 'hidden' }}>
-  <Box sx={{ px: 2, pb: 2 }}>
-    <Typography gutterBottom sx={{ color: 'text.primary', fontWeight: 'medium' }}>
+  <Box sx={{ px: 2, pb: 1 }}>
+    {/* <Typography gutterBottom sx={{ color: 'text.primary', fontWeight: 'medium' }}>
       {folderStructure[selectedItemIndex]?.name}
-    </Typography>
+    </Typography> */}
   </Box>
   <Box sx={{ width: '100%', height: '100%' }}>
     {!isPdfSelected ? (
