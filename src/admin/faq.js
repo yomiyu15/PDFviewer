@@ -60,8 +60,8 @@ const FaqManager = () => {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        FAQ Manager
+      <Typography variant="h6" gutterBottom>
+        FAQ
       </Typography>
 
       {/* Error and Success messages */}

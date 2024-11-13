@@ -187,11 +187,11 @@ const FolderManager = () => {
     <Grid container spacing={2} style={{ marginTop: '20px' }}> {/* Added marginTop */}
       {/* Left Side - Folder Structure */}
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} style={{ padding: '16px' }}>
-          <Typography variant="h6">Admin Panel</Typography>
+    
+        
           <Typography variant="h5" sx={{ fontSize: '14px' }}>Folder Structure</Typography>
           <div>{renderFolderStructure(folderStructure)}</div>
-        </Paper>
+     
       </Grid>
 
       {/* Right Side - Actions (Create Folder, Upload File) */}

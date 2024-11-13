@@ -12,13 +12,9 @@ export default function HomePage(props) {
       <CssBaseline enableColorScheme />
       <AppAppBar />
       <Hero/>
-      
-    
-      <div>
-       
-        <Divider />
+      <Divider />
         <Footer />
-      </div>
+   
     </AppTheme>
   );
 }

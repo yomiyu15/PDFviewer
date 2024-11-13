@@ -9,7 +9,7 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import FacebookIcon from '@mui/icons-material/GitHub';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/X';
 import SitemarkIcon from './logo1';
@@ -18,7 +18,7 @@ function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
       {'Copyright © '}
-      <Link color="text.secondary" href="https://mui.com/">
+      <Link color="text.secondary" href="https://coopbankoromia.com.et/">
         CoopBank
       </Link>
       &nbsp;
@@ -58,13 +58,17 @@ export default function Footer() {
           <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
             <SitemarkIcon />
             <Typography variant="body2" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
-              Join the newsletter
+              Get in Touch
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-              Subscribe for weekly updates. No spams ever!
+              Reach out to us for any banking inquiries or support. Our team is here to help!
             </Typography>
-            <InputLabel htmlFor="email-newsletter">Email</InputLabel>
-          
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              <strong>Phone:</strong> +251 9568 123-4567
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              <strong>Email:</strong> support@coopbankoromia.com
+            </Typography>
           </Box>
         </Box>
         <Box
@@ -165,8 +169,7 @@ export default function Footer() {
           <IconButton
             color="inherit"
             size="small"
-            href="https://github.com/mui"
-            aria-label="GitHub"
+           
             sx={{ alignSelf: 'center' }}
           >
             <FacebookIcon />

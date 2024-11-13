@@ -4,17 +4,18 @@ import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@mui/material/Drawer';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { debounce } from 'lodash';
+import axios from 'axios';
+import { Document, Page } from 'react-pdf';
 import Sitemark from './logo1';
 import ColorModeIconDropdown from '../shared-theme/ColorModeIconDropdown';
-import TextField from '@mui/material/TextField';
-import { debounce } from 'lodash';
+import Container from '@mui/material/Container';
+
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -36,24 +37,45 @@ export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filteredFiles, setFilteredFiles] = React.useState([]);
-  
-  const files = ['file1.pdf', 'file2.pdf', 'file3.pdf']; // Sample file list
-  
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
+  const [files, setFiles] = React.useState([]);
+  const [pdfOpen, setPdfOpen] = React.useState(false);
+  const [currentPdf, setCurrentPdf] = React.useState(null);
+
+  // Fetch the list of files when the component mounts
+  React.useEffect(() => {
+    axios
+      .get('http://localhost:5000/api/files/list-all-files')
+      .then((response) => {
+        setFiles(response.data);
+        setFilteredFiles(response.data); // Initially show all files
+      })
+      .catch((error) => {
+        console.error('Error fetching files:', error);
+      });
+  }, []);
+
+  // Function to open the PDF by navigating to the view URL
+  const handleFileClick = (viewUrl) => {
+    setCurrentPdf(viewUrl); // Set the clicked PDF URL
+    setPdfOpen(true); // Open the dialog
   };
 
   const handleSearch = debounce((query) => {
     setSearchQuery(query);
     if (query) {
-      const results = files.filter(file =>
-        file.toLowerCase().includes(query.toLowerCase())
+      const results = files.filter((file) =>
+        file.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredFiles(results);
     } else {
-      setFilteredFiles([]);
+      setFilteredFiles(files);
     }
   }, 300); // Debounced search to avoid too many updates
+
+  const handleCloseDialog = () => {
+    setPdfOpen(false); // Close the dialog
+    setCurrentPdf(null); // Clear the PDF URL
+  };
 
   return (
     <AppBar
@@ -90,53 +112,67 @@ export default function AppAppBar() {
           </Box>
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
             {/* Search Box */}
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search files"
-              onChange={(e) => handleSearch(e.target.value)}
-              sx={{ width: 200 }}
-            />
-            <ColorModeIconDropdown />
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
-            <ColorModeIconDropdown size="medium" />
-            <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
-              <MenuIcon />
-            </IconButton>
-            <Drawer
-              anchor="top"
-              open={open}
-              onClose={toggleDrawer(false)}
-              PaperProps={{
-                sx: {
-                  top: 'var(--template-frame-height, 0px)',
-                },
-              }}
-            >
-              <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <IconButton onClick={toggleDrawer(false)}>
-                    <CloseRoundedIcon />
-                  </IconButton>
+            <Box sx={{ position: 'relative', width: 200 }}>
+              <TextField
+                variant="outlined"
+                size="small"
+                placeholder="Search files"
+                onChange={(e) => handleSearch(e.target.value)}
+                sx={{ width: '100%' }}
+              />
+              {/* Display search results below search box */}
+              {filteredFiles.length > 0 && searchQuery && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    width: '100%',
+                    backgroundColor: 'white',
+                    boxShadow: 2,
+                    borderRadius: 1,
+                    zIndex: 9999,
+                    maxHeight: 200,
+                    overflowY: 'auto',
+                  }}
+                >
+                  {filteredFiles.map((file) => (
+                    <Box key={file.path} sx={{ mb: 1 }}>
+                      <Button
+                        onClick={() => handleFileClick(file.viewUrl)}
+                        variant="text"
+                        sx={{ textAlign: 'left', width: '100%' }}
+                      >
+                        {file.name}
+                      </Button>
+                    </Box>
+                  ))}
                 </Box>
-
-                <MenuItem>Product Catalog</MenuItem>
-                <MenuItem>Our Products</MenuItem>
-                <MenuItem>Highlights</MenuItem>
-                <MenuItem>Services</MenuItem>
-                <MenuItem>FAQ</MenuItem>
-
-                <Divider sx={{ my: 3 }} />
-
-                <MenuItem>
-                  {/* You can add a search input here for mobile view */}
-                </MenuItem>
-              </Box>
-            </Drawer>
+              )}
+            </Box>
+            <ColorModeIconDropdown />
           </Box>
         </StyledToolbar>
       </Container>
+
+      {/* PDF Dialog */}
+      <Dialog open={pdfOpen} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
+       
+        <DialogContent>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {currentPdf && (
+              <Document file={currentPdf}>
+                <Page pageNumber={1} />
+              </Document>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 }
