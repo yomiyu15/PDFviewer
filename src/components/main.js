@@ -11,10 +11,8 @@ export default function MarketingPage(props) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <AppAppBar />
-
-      <Features />
-
-      <Footer />
+       <Features />
+       <Footer />
     </AppTheme>
   );
 }

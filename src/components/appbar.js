@@ -118,15 +118,7 @@ export default function AppAppBar() {
               >
                 Digital Products
               </Button>
-              <Button variant="text" color="info" size="small"  onClick={() =>
-                  document
-                    .getElementById("productoverview")
-                    .scrollIntoView({ behavior: "smooth" })
-                }
-              >
-                Services
-               
-              </Button>
+              
               <Button
                 variant="text"
                 color="info"

@@ -49,20 +49,23 @@ const products = [
 export default function DigitalProducts() {
   return (
     <Box
-      id="digital-products"
-      sx={{
-        pt: { xs: 4, sm: 12 },
-        pb: { xs: 8, sm: 16 },
-        color: 'white',
-        bgcolor: 'grey.900',
-      }}
-    >
+    id="digital-products"
+    sx={{
+      pt: { xs: 4, sm: 12 },
+      pb: { xs: 8, sm: 16 },
+      color: '#000',
+      
+      bgcolor: '#f4f4f4 ', // Updated background color
+    }}
+  >
+  
       <Container
         sx={{
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          minHeight: '30vh',
           gap: { xs: 3, sm: 6 },
         }}
       >
@@ -75,7 +78,7 @@ export default function DigitalProducts() {
           <Typography component="h2" variant="h4" gutterBottom>
             Digital Products
           </Typography>
-          <Typography variant="body1" sx={{ color: 'grey.400' }}>
+          <Typography variant="body1" sx={{ color: '#000' ,fontWeight: 'medium'}}>
             Explore our range of innovative digital products designed to empower individuals and businesses with
             seamless, secure, and efficient solutions.
           </Typography>
@@ -93,7 +96,7 @@ export default function DigitalProducts() {
                   p: 3,
                   height: '100%',
                   borderColor: 'hsla(220, 25%, 25%, 0.3)',
-                  backgroundColor: 'grey.800',
+                  backgroundColor: '#f4f4f4 ',
                 }}
               >
                 <Box sx={{ opacity: '50%' }}>{product.icon}</Box>
@@ -101,7 +104,7 @@ export default function DigitalProducts() {
                   <Typography gutterBottom sx={{ fontWeight: 'medium' }}>
                     {product.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                  <Typography variant="body2" sx={{ color: '#000' }}>
                     {product.description}
                   </Typography>
                 </div>

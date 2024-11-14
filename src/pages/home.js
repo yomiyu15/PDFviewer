@@ -9,7 +9,7 @@ import Testimonials from '../components/Products';
 import FAQ from '../components/faq';
 
 import Highlights from '../components/highlights';
-import Pricing from '../components/services';
+
 
 
 export default function HomePage(props) {
@@ -21,8 +21,7 @@ export default function HomePage(props) {
       <Testimonials />
       <Divider />
         <Highlights />
-        <Divider />
-        <Pricing />
+       
         <Divider />
         <FAQ />
         <Divider />

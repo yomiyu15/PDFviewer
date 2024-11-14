@@ -13,17 +13,17 @@ import { useTheme } from '@mui/system';
 const productCatalog = [
   {
     logo: <Avatar alt="Product 1" src="/static/images/product1.jpg" />,
-    name: 'Savings Account',
+    name: 'Deposit Products',
     description: "A high-interest savings account to help you grow your money securely. Enjoy competitive interest rates and easy access to your funds.",
   },
   {
     logo: <Avatar alt="Product 2" src="/static/images/product2.jpg" />,
-    name: 'Personal Loan',
+    name: 'E Banking',
     description: "Flexible personal loan options for your various needs, from home improvements to unexpected expenses. Quick approval process.",
   },
   {
     logo: <Avatar alt="Product 3" src="/static/images/product3.jpg" />,
-    name: 'Credit Card',
+    name: 'Loans & Advances',
     description: "A credit card designed to offer great rewards and cashback. Benefit from low interest rates and a range of services for your convenience.",
   },
   // Add more products as needed
