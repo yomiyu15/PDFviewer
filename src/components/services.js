@@ -54,7 +54,7 @@ const features = [
 export default function BankingOverview() {
   return (
     <Container
-      id="product-overview"
+      id="productoverview"
       sx={{
         pt: { xs: 4, sm: 12 },
         pb: { xs: 8, sm: 16 },

@@ -21,6 +21,7 @@ export default function Hero() {
     <Box
       sx={{
         position: 'relative',
+        marginTop:10,
         overflow: 'hidden',
         minHeight: { xs: '550px', sm: '800px' },
         display: 'flex',

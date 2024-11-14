@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Grid, Paper, TextField, Button, Typography, IconButton, Snackbar, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Grid, Paper, TextField, Button, Typography, IconButton, Snackbar, Dialog, DialogActions, DialogContent, DialogTitle , Stack} from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 
 const FolderManager = () => {
@@ -55,25 +58,41 @@ const FolderManager = () => {
   };
 
   // Create Folder Function
-  const createFolder = async () => {
-    if (!newFolderName) {
-      alert('Please enter a folder name');
-      return;
-    }
+ const createFolder = async () => {
+  if (!newFolderName) {
+    alert('Please enter a folder name');
+    return;
+  }
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/folders/create-folder', {
-        parentFolderPath,
-        folderName: newFolderName
-      });
-      showSnackbar('Folder created successfully', 'green');
-      setNewFolderName('');
-      fetchFolderStructure(); // Refresh folder structure after creating
-    } catch (error) {
-      console.error('Error creating folder:', error);
-      alert('Failed to create folder');
+  try {
+    const response = await axios.post('http://localhost:5000/api/folders/create-folder', {
+      parentFolderPath,
+      folderName: newFolderName
+    });
+    showSnackbar('Folder created successfully', 'green');
+    setNewFolderName('');
+    setParentFolderPath('');
+    fetchFolderStructure(); // Refresh folder structure after creating
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    
+    // Check for specific error responses
+    if (error.response && error.response.data && error.response.data.message) {
+      const errorMessage = error.response.data.message;
+
+      if (errorMessage.includes("Parent folder doesn't exist")) {
+        showSnackbar("Parent folder doesn't exist", 'red');
+      } else if (errorMessage.includes('Folder with this name already exists')) {
+        showSnackbar('Folder with this name already exists', 'red');
+      } else {
+        showSnackbar('Failed to create folder', 'red');
+      }
+    } else {
+      showSnackbar('Failed to create folder', 'red');
     }
-  };
+  }
+};
+
 
   // Handle File Upload
   const handleFileChange = (e) => {
@@ -186,7 +205,7 @@ const FolderManager = () => {
   return (
     <Grid container spacing={2} style={{ marginTop: '20px' }}> {/* Added marginTop */}
       {/* Left Side - Folder Structure */}
-      <Grid item xs={12} md={6}>
+      <Grid item xs={12} md={8}>
     
         
           <Typography variant="h5" sx={{ fontSize: '14px' }}>Folder Structure</Typography>
@@ -195,57 +214,88 @@ const FolderManager = () => {
       </Grid>
 
       {/* Right Side - Actions (Create Folder, Upload File) */}
-      <Grid item xs={12} md={6}>
-        <Paper elevation={3} style={{ padding: '36px' }}>
-          <Typography variant="h5" sx={{ fontSize: '14px' }}>Folder Management</Typography>
+      <Grid item xs={12} md={4}>
+      <Paper elevation={3} style={{ padding: '36px', borderRadius: '10px', backgroundColor: '#f5f5f5' }}>
+        <Typography variant="h5" sx={{ fontSize: '18px', marginBottom: '16px' }}>
+          <FolderOpenIcon sx={{ color: '#00adef', marginRight: '8px' }} />
+          Folder Management
+        </Typography>
+        <Typography variant="h6" sx={{ fontSize: '14px', marginBottom: '8px' }}>
+          
+         Create Folder </Typography>
 
-          {/* Create Folder */}
+        {/* Create Folder Section */}
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ marginBottom: '16px' }}>
           <TextField
             label="Folder Name"
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             fullWidth
             margin="normal"
-            sx={{ fontSize: '12px' }}
+            sx={{ fontSize: '10px' }}
           />
-          <TextField
-            label="Parent Folder Path"
-            value={parentFolderPath}
-            onChange={(e) => setParentFolderPath(e.target.value)}
-            fullWidth
-            margin="normal"
-            sx={{ fontSize: '12px' }}
-          />
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: '#00adef', fontSize: '12px' }}
-            onClick={createFolder}
-            fullWidth
-          >
-            Create Folder
-          </Button>
+          <IconButton onClick={createFolder} color="primary" aria-label="create folder">
+            <CreateNewFolderIcon />
+          </IconButton>
+        </Stack>
 
-          {/* Upload File */}
-          <TextField
-            label="Folder Path"
-            value={folderPath}
-            onChange={(e) => setFolderPath(e.target.value)}
-            fullWidth
-            margin="normal"
-            sx={{ fontSize: '12px' }}
-          />
-          <input type="file" onChange={handleFileChange} />
+        <TextField
+          label="Parent Folder Path"
+          value={parentFolderPath}
+          onChange={(e) => setParentFolderPath(e.target.value)}
+          fullWidth
+          margin="normal"
+          sx={{ fontSize: '10px' }}
+        />
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: '#00adef', fontSize: '12px', marginBottom: '16px' }}
+          onClick={createFolder}
+          fullWidth
+          startIcon={<CreateNewFolderIcon />}
+        >
+          Create Folder
+        </Button>
+
+        {/* Upload File Section */}
+        <Typography variant="h6" sx={{ fontSize: '14px', marginBottom: '8px' }}>
+          
+          Upload File
+        </Typography>
+        <TextField
+          label="Folder Path"
+          value={folderPath}
+          onChange={(e) => setFolderPath(e.target.value)}
+          fullWidth
+          margin="normal"
+          sx={{ fontSize: '12px' }}
+        />
+        <Stack direction="row" spacing={1} alignItems="center">
+          <input type="file" onChange={handleFileChange} style={{ display: 'none' }} id="file-upload" />
+          <label htmlFor="file-upload">
+            <Button component="span" variant="outlined" sx={{ fontSize: '12px' }}>
+              Choose File
+            </Button>
+          </label>
+
+          {/* Display the chosen file name */}
+          {file && (
+            <Typography sx={{ fontSize: '12px', color: '#00adef', marginLeft: '8px' }}>
+              {file.name}
+            </Typography>
+          )}
+
           <Button
             variant="contained"
             sx={{ backgroundColor: '#00adef', fontSize: '12px' }}
             onClick={uploadFile}
-            fullWidth
+            startIcon={<UploadFileIcon />}
           >
-            Upload File
+           
           </Button>
-        </Paper>
-      </Grid>
-
+        </Stack>
+      </Paper>
+    </Grid>
       {/* Success Snackbar */}
       <Snackbar
         open={snackbarOpen}
